@@ -1,0 +1,8 @@
+*.o
+*.depend
+defaults.prep
+libshared.a
+libshared.so
+rtconfig.h
+version
+version.h
