@@ -716,6 +716,13 @@ obj-y += sysstate
 obj-$(RTCONFIG_OPENVPN) += openssl
 obj-$(RTCONFIG_OPENVPN) += libvpn
 
+obj-$(RTCONFIG_SHADOWSOCKS) += libev-4.25
+obj-$(RTCONFIG_SHADOWSOCKS) += c-ares-1.15.0
+obj-$(RTCONFIG_SHADOWSOCKS) += libsodium-1.0.16
+obj-$(RTCONFIG_SHADOWSOCKS) += pcre-8.40
+obj-$(RTCONFIG_SHADOWSOCKS) += mbedtls-2.6.0
+obj-$(RTCONFIG_SHADOWSOCKS) += shadowsocks-libev
+
 obj-y += rc
 obj-y += rom
 obj-y += others
@@ -7519,6 +7526,99 @@ tablesorter:
 
 .PHONY : tablesorter
 
+libev-4.25/stamp-h1:
+	cd libev-4.25 && \
+	./$(CONFIGURE) --prefix=/usr
+	touch $@
+
+libev-4.25: libev-4.25/stamp-h1
+	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage
+
+libev-4.25-install: libev-4.25
+	@$(SEP)
+#	install -D libxml2/.libs/libxml2.so.2 $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
+#	$(STRIP) $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
+#	cd $(INSTALLDIR)/libxml2/usr/lib && ln -sf libxml2.so.2 libxml2.so
+
+libev-4.25-clean:
+	-@$(MAKE) -C libev-4.25 clean
+	@rm -f libev-4.25/stamp-h1
+
+c-ares-1.15.0/stamp-h1:
+	echo $(CXXFLAGS) $(CFLAGS) && \
+	cd c-ares-1.15.0 && \
+	$(CONFIGURE) --prefix=/usr CFLAGS=""
+	touch $@
+
+c-ares-1.15.0: c-ares-1.15.0/stamp-h1
+	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage
+
+c-ares-1.15.0-install: c-ares-1.15.0
+	@$(SEP)
+
+c-ares-1.15.0-clean:
+	-@$(MAKE) -C c-ares-1.15.0 clean
+	@rm -f c-ares-1.15.0/stamp-h1
+
+libsodium-1.0.16/stamp-h1:
+	cd libsodium-1.0.16 && \
+	./$(CONFIGURE) --prefix=/usr
+	touch $@
+
+libsodium-1.0.16: libsodium-1.0.16/stamp-h1
+	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage
+
+libsodium-1.0.16-install: libsodium-1.0.16
+	@$(SEP)
+
+libsodium-1.0.16-clean:
+	-@$(MAKE) -C libsodium-1.0.16 clean
+	@rm -f libsodium-1.0.16/stamp-h1
+
+pcre-8.40/stamp-h1:
+	cd pcre-8.40 && \
+	./$(CONFIGURE) --prefix=/usr --disable-shared --enable-utf8 --enable-unicode-properties
+	touch $@
+	[ -d pcre-8.40/m4 ] || mkdir pcre-8.40/m4
+
+pcre-8.40: pcre-8.40/stamp-h1
+	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage
+
+pcre-8.40-install: pcre-8.40
+	@$(SEP)
+
+pcre-8.40-clean:
+	-@$(MAKE) -C pcre-8.40 clean
+	@rm -f pcre-8.40/stamp-h1
+
+mbedtls-2.6.0/stamp-h1:
+	touch $@
+
+mbedtls-2.6.0: mbedtls-2.6.0/stamp-h1
+	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage
+
+mbedtls-2.6.0-install: mbedtls-2.6.0
+	@$(SEP)
+
+mbedtls-2.6.0-clean:
+	-@$(MAKE) -C mbedtls-2.6.0 clean
+	@rm -f mbedtls-2.6.0/stamp-h1
+
+shadowsocks-libev/stamp-h1:
+	cd shadowsocks-libev && \
+	./autogen.sh && $(CONFIGURE) --disable-documentation  --disable-ssp CFLAGS="-I$(STAGEDIR)/usr/include" \
+		LDFLAGS="-L$(STAGEDIR)/usr/local/lib" --with-mbedtls=$(STAGEDIR)/usr --with-pcre=$(STAGEDIR)/usr --with-sodium=$(STAGEDIR)/usr \
+		--with-ev=$(STAGEDIR)/usr CFLAGS="-Os -Wall $(EXTRACFLAGS)" LIBS="-lpthread -ldl -lm"
+	touch $@
+
+shadowsocks-libev:libev-4.25 c-ares-1.15.0 libsodium-1.0.16 pcre-8.40 mbedtls-2.6.0 shadowsocks-libev/stamp-h1
+	$(MAKE) -C $@ all
+
+shadowsocks-libev-install:shadowsocks-libev
+
+shadowsocks-libev-clean:
+	-@$(MAKE) -C shadowsocks-libev clean
+	@rm -f shadowsocks-libev/stamp-h1
 
 #
 # Generic rules

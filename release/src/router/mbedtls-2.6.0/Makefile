@@ -22,20 +22,20 @@ tests: lib
 
 ifndef WINDOWS
 install: no_test
-	mkdir -p $(DESTDIR)/include/mbedtls
-	cp -r include/mbedtls $(DESTDIR)/include
+	mkdir -p $(DESTDIR)/usr/include/mbedtls
+	cp -r include/mbedtls $(DESTDIR)/usr/include
 	
-	mkdir -p $(DESTDIR)/lib
-	cp -RP library/libmbedtls.*    $(DESTDIR)/lib
-	cp -RP library/libmbedx509.*   $(DESTDIR)/lib
-	cp -RP library/libmbedcrypto.* $(DESTDIR)/lib
+	mkdir -p $(DESTDIR)/usr/lib
+	cp -RP library/libmbedtls.*    $(DESTDIR)/usr/lib
+	cp -RP library/libmbedx509.*   $(DESTDIR)/usr/lib
+	cp -RP library/libmbedcrypto.* $(DESTDIR)/usr/lib
 	
-	mkdir -p $(DESTDIR)/bin
+	mkdir -p $(DESTDIR)/usr/bin
 	for p in programs/*/* ; do              \
 	    if [ -x $$p ] && [ ! -d $$p ] ;     \
 	    then                                \
 	        f=$(PREFIX)`basename $$p` ;     \
-	        cp $$p $(DESTDIR)/bin/$$f ;     \
+	        cp $$p $(DESTDIR)/usr/bin/$$f ;     \
 	    fi                                  \
 	done
 

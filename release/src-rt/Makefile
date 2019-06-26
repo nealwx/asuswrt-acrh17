@@ -1643,6 +1643,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_OPENVPN/d" $(1); \
 		echo "RTCONFIG_OPENVPN=y" >>$(1); \
  	fi; \
+	if [ "$(SHADOWSOCKS)" = "y" ]; then \
+		sed -i "/RTCONFIG_SHADOWSOCKS/d" $(1); \
+		echo "RTCONFIG_SHADOWSOCKS=y" >>$(1); \
+ 	fi; \
 	if [ "$(APP)" = "installed" ]; then \
 		sed -i "/RTCONFIG_APP_PREINSTALLED/d" $(1); \
 		echo "RTCONFIG_APP_PREINSTALLED=y" >>$(1); \

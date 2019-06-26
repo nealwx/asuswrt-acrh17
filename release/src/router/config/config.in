@@ -1765,3 +1765,8 @@ config RTCONFIG_LIBASUSLOG
 config RTCONFIG_WTF_REDEEM
 	bool "wtf_redeem support"
 	default n
+
+config RTCONFIG_SHADOWSOCKS
+	bool "shadowsocks-libev support"
+	default n
+
