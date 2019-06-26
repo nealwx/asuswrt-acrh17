@@ -7536,9 +7536,9 @@ libev-4.25: libev-4.25/stamp-h1
 
 libev-4.25-install: libev-4.25
 	@$(SEP)
-#	install -D libxml2/.libs/libxml2.so.2 $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
-#	$(STRIP) $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
-#	cd $(INSTALLDIR)/libxml2/usr/lib && ln -sf libxml2.so.2 libxml2.so
+	install -D libev-4.25/.libs/libev.so.4.0.0 $(INSTALLDIR)/libev-4.25/usr/lib/libev.so.4.0.0 
+	$(STRIP) $(INSTALLDIR)/libev-4.25/usr/lib/libev.so.4.0.0
+	cd $(INSTALLDIR)/libev-4.25/usr/lib && ln -sf libev.so.4.0.0 libev.so.4
 
 libev-4.25-clean:
 	-@$(MAKE) -C libev-4.25 clean
@@ -7555,6 +7555,9 @@ c-ares-1.15.0: c-ares-1.15.0/stamp-h1
 
 c-ares-1.15.0-install: c-ares-1.15.0
 	@$(SEP)
+	install -D c-ares-1.15.0/.libs/libcares.so.2.3.0 $(INSTALLDIR)/c-ares-1.15.0/usr/lib/libcares.so.2.3.0
+	$(STRIP) $(INSTALLDIR)/c-ares-1.15.0/usr/lib/libcares.so.2.3.0
+	cd $(INSTALLDIR)/c-ares-1.15.0/usr/lib && ln -sf libcares.so.2.3.0 libcares.so.2
 
 c-ares-1.15.0-clean:
 	-@$(MAKE) -C c-ares-1.15.0 clean
@@ -7570,6 +7573,9 @@ libsodium-1.0.16: libsodium-1.0.16/stamp-h1
 
 libsodium-1.0.16-install: libsodium-1.0.16
 	@$(SEP)
+	install -D libsodium-1.0.16/src/libsodium/.libs/libsodium.so.23.1.0 $(INSTALLDIR)/libsodium-1.0.16/usr/lib/libsodium.so.23.1.0
+	$(STRIP) $(INSTALLDIR)/libsodium-1.0.16/usr/lib/libsodium.so.23.1.0
+	cd $(INSTALLDIR)/libsodium-1.0.16/usr/lib && ln -sf libsodium.so.23.1.0 libsodium.so.23
 
 libsodium-1.0.16-clean:
 	-@$(MAKE) -C libsodium-1.0.16 clean
@@ -7615,9 +7621,15 @@ shadowsocks-libev:libev-4.25 c-ares-1.15.0 libsodium-1.0.16 pcre-8.40 mbedtls-2.
 	$(MAKE) -C $@ all
 
 shadowsocks-libev-install:shadowsocks-libev
+	@$(SEP)
+	install -D shadowsocks-libev/src/ss-local $(INSTALLDIR)/shadowsocks-libev/usr/sbin/ss-local
+	install -D shadowsocks-libev/src/ss-redir $(INSTALLDIR)/shadowsocks-libev/usr/sbin/ss-redir
+	install -D shadowsocks-libev/src/ss-server $(INSTALLDIR)/shadowsocks-libev/usr/sbin/ss-server
+	install -D shadowsocks-libev/src/ss-tunnel $(INSTALLDIR)/shadowsocks-libev/usr/sbin/ss-tunnel
+	$(STRIP) $(INSTALLDIR)/shadowsocks-libev/usr/sbin/ss-*
 
 shadowsocks-libev-clean:
-	-@$(MAKE) -C shadowsocks-libev clean
+	-@$(MAKE) -j 8 -C shadowsocks-libev clean
 	@rm -f shadowsocks-libev/stamp-h1
 
 #
