@@ -657,9 +657,9 @@ function show_apps(){
 		else{
 			
 			if(apps_array[i][0] == "downloadmaster" || apps_array[i][0] == "mediaserver" || apps_array[i][0] == "aicloud" || apps_array[i][0] == "mediaserver2")
-				htmlcode += '<span class="app_action" onclick="_appname=\''+apps_array[i][0]+'\';divdisplayctrl(\'none\', \'\', \'none\', \'none\');location.href=\'#\';">Install</span>\n';		/* untranslated */
+				htmlcode += '<span class="app_action" onclick="_appname=\''+apps_array[i][0]+'\';divdisplayctrl(\'none\', \'\', \'none\', \'none\');location.href=\'#\';"><#Excute#></span>\n';		/* untranslated */
 			else
-				htmlcode += '<span class="app_action" onclick="apps_form(\'install\',\''+ apps_array[i][0] +'\',\''+ partitions_array[i] +'\');">Install</span>\n';		/* untranslated */
+				htmlcode += '<span class="app_action" onclick="apps_form(\'install\',\''+ apps_array[i][0] +'\',\''+ partitions_array[i] +'\');"><#Excute#></span>\n';		/* untranslated */
 		}
 		
 		htmlcode += '</div><br/><br/></td></tr>\n';
@@ -892,7 +892,7 @@ function go_modem_page(usb_unit_flag){
 		</td>
   </tr> 
   <tr>
-  	<td class="line_export"><img src="images/New_ui/export/line_export.png" /></td>
+  	<td><div class="splitLine"></div></td>
   </tr>
   <tr>
 		<td>
@@ -923,7 +923,7 @@ function go_modem_page(usb_unit_flag){
 					</tr>		
 				</table>
 			<br/>
-			<div><img src="images/New_ui/export/line_export.png" /></div>
+			<div class="splitLine"></div>
 			<table class="" cellspacing="0" cellpadding="0">
 				<tbody>
 					<tr valign="top">

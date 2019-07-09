@@ -1652,7 +1652,7 @@ feedback_conn_sws=Langzame bekabelde snelheid
 feedback_conn_rra=Router automatisch opnieuw opstarten
 feedback_conn_ucp=Onstabiel verbindingsprobleem
 feedback_connection_type=Kies welke optie het best de prestaties van uw DSL-service beschrijft
-feedback_country=Uw land / regio
+feedback_country=Uw land
 feedback_cancel_capturing=Debuglog anuleren
 feedback_current_capturing=Diagnostische debuglog wordt gemaakt
 feedback_capturing_duration=Duur van diagnostische debuglog
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Meld aan</a> bij uw IFTTT-account.
 IFTTT_start0=Start een automatiseringsleven met ASUS Router en IFTTT!
 IFTTT_start1=Aan de slag:
 in=in
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Band
 Interface_target=Doelband
 Internet=Internet

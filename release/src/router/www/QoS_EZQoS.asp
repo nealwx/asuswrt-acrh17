@@ -269,7 +269,7 @@ var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 var qos_bw_rulelist = "<% nvram_get("qos_bw_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var select_all_checked = 0;
 
-if(based_modelid == "RT-AC68A"){	//MODELDEP : Spec special fine tune
+if(based_modelid == "RT-AC68A" || based_modelid == "MAP-AC1750"){	//MODELDEP : Spec special fine tune
 	bwdpi_support = false;
 }
 
@@ -425,6 +425,7 @@ function initial(){
 		document.getElementById('int_type_link').style.display = "none";
 		show_settings("NonAdaptive");
 	}
+	
 
 	if(pm_support) {
 		collect_info();
@@ -649,7 +650,12 @@ function submitQoS(){
 					if(document.form.qos_type.value == 0 && !lantiq_support){
 						FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 					}
-					else{				
+					else{
+						if(document.form.qos_type.value == 0 && lantiq_support){
+							var hwnatPrompt = "NAT traffic will be processed by CPU if traditional QoS is enabled. Are you sure want to enable?";
+							if(!confirm(hwnatPrompt)) return false;
+						}
+
 						document.form.action_script.value = "restart_qos;restart_firewall";
 					}
 				}
@@ -671,12 +677,6 @@ function change_qos_type(value){
 	if(value=="1" && (based_modelid == "RT-AC85U" || based_modelid == "RT-AC85P" || based_modelid == "RT-AC65U")){	//Force change to 0
 		value = 0;
 	}
-
-	/*show apaptive qos*/
-	if((value == 0 || value == 2) && based_modelid == "BLUECAVE"){
-		value = 1;
-	}
-	/*ens show adaptive qos*/
 	if(value == 0){		//Traditional QoS
 		document.getElementById('int_type').checked = false;
 		document.getElementById('trad_type').checked = true;
@@ -1116,7 +1116,7 @@ function genMain_table(){
 	code += '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="mainTable_table">';
 	code += '<thead><tr>';
 	if(pm_support)
-		code += '<td colspan="5">Rule List&nbsp;(<#List_limit#>&nbsp;32)</td>';
+		code += '<td colspan="5"><#PM_Rule_List#>&nbsp;(<#List_limit#>&nbsp;32)</td>';
 	else
 		code += '<td colspan="5"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;32)</td>';
 	code += '</tr></thead>';
@@ -1356,7 +1356,7 @@ function setGroup(name){
 						<div style="margin-left:30px; margin-top:10px;">
 							<div class="formfontdesc" style="line-height:20px;font-size:14px;"><#Adaptive_QoS_desc#></div>
 						</div>
-						<div style="margin:5px;*margin-left:-5px;"><img style="width: 730px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+						<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
 					</tr>
 					<tr>
 						<td valign="top">
@@ -1440,7 +1440,9 @@ function setGroup(name){
 								</td>
 							</tr>
 							<tr>
-								<td height="5" bgcolor="#4D595D" valign="top"><img src="images/New_ui/export/line_export.png" /></td>
+								<td height="5" bgcolor="#4D595D" valign="top">
+									<div class="splitLine"></div>
+								</td>
 							</tr>
 							<tr>
 								<td height="30" align="left" valign="top" bgcolor="#4D595D">
@@ -1456,8 +1458,8 @@ function setGroup(name){
 														<#EzQoS_desc#>
 														<ul>
 															<li id="function_int_desc"><#EzQoS_desc_Adaptive#></li>
-															<li id="function_trad_desc"><#EzQoS_desc_Traditional#></li>
-															<li id="function_bandwidthLimit_desc"><#EzQoS_desc_Bandwidth_Limiter#></li>
+															<li><#EzQoS_desc_Traditional#></li>
+															<li><#EzQoS_desc_Bandwidth_Limiter#></li>
 														</ul>
 														<#EzQoS_desc_note#>
 													</div>
@@ -1527,8 +1529,8 @@ function setGroup(name){
 											<th><#QoS_Type#></th>
 											<td colspan="2">
 												<input id="int_type" name="qos_type_radio" value="1" onClick="change_qos_type(this.value);" style="display:none;" type="radio" <% nvram_match("qos_type", "1","checked"); %>><a id="int_type_link" class="hintstyle" style="display:none;" href="javascript:void(0);" onClick="openHint(20, 5);"><label for="int_type"><#Adaptive_QoS#></label></a>
-												<input id="trad_type" name="qos_type_radio" value="0" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "0","checked"); %>><a id="trad_type_link" class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 6);"><label for="trad_type"><#EzQoS_type_traditional#></label></a>
-												<input id="bw_limit_type" name="qos_type_radio" value="2" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "2","checked"); %>><a id="bw_limit_type_link" class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 7)"><label for="bw_limit_type"><#Bandwidth_Limiter#></label></a>
+												<input id="trad_type" name="qos_type_radio" value="0" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "0","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 6);"><label for="trad_type"><#EzQoS_type_traditional#></label></a>
+												<input id="bw_limit_type" name="qos_type_radio" value="2" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "2","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 7)"><label for="bw_limit_type"><#Bandwidth_Limiter#></label></a>
 											</td>
 										</tr>
 										<tr id="bandwidth_setting_tr" style="display:none">

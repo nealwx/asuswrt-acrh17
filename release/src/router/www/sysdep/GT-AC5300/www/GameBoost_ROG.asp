@@ -36,14 +36,6 @@
 	border-radius:7px;
 	margin-left:45px;
 }
-.splitLine{
-	background-image: url('/images/New_ui/export/line_export.png');
-	background-repeat: no-repeat;
-	height: 3px;
-	width: 100%;
-	margin-bottom: 2px;
-	margin-top: 2px;
-}
 #sortable div table tr:hover{
 	cursor: pointer;
 	color: #000;
@@ -1184,6 +1176,7 @@ function applyRule(){
 }
 
 function eula_confirm(){
+	var _flag = document.form._flag.value;
 	document.form.TM_EULA.value = 1;
 	if(_flag == "apps_analysis"){
 		document.form.apps_analysis.value = 1;
@@ -1252,7 +1245,9 @@ function cancel(){
 <input type="hidden" name="qos_enable" value="<% nvram_get("qos_enable"); %>">
 <input type="hidden" name="qos_type" value="<% nvram_get("qos_type"); %>">
 <input type="hidden" name="qos_type_ori" value="<% nvram_get("qos_type"); %>">
-<input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get("bwdpi_app_rulelist"); %>">
+<input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get("bwdpi_app_rulelist"); %>" disabled>
+<input type="hidden" name="_flag" value="" disabled>
+
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
@@ -1310,7 +1305,7 @@ function cancel(){
 							</td>
 						</tr>
 						<tr>
-							<td height="5" bgcolor="#4D595D" valign="top"><img src="images/New_ui/export/line_export.png" /></td>
+							<td height="5" bgcolor="#4D595D" valign="top"><div class="splitLine"></div></td>
 						</tr>
 						<tr>
 							<td>

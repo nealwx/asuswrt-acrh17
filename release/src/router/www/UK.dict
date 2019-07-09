@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=Виберіть, який пункт найкраще описує роботу послуги DSL
-feedback_country=Ваша країна / регіон
+feedback_country=Ваша країна
 feedback_cancel_capturing=Скасувати зйомку налагодження
 feedback_current_capturing=У процесі зйомка журналу діагностики і налагодження
 feedback_capturing_duration=Тривалість зйомки журналу діагностики несправностей
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Увійдіть</a> до облікового
 IFTTT_start0=Автоматизуйте своє життя з маршрутизатором ASUS і IFTTT!
 IFTTT_start1=Почніть роботу:
 in=в
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Діапазон
 Interface_target=Цільовий діапазон
 Internet=Інтернет

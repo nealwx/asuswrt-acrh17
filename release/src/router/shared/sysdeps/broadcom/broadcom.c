@@ -26,7 +26,7 @@
 static int _gpio_ioctl(int f, int gpioreg, unsigned int mask, unsigned int val)
 {
 	struct gpio_ioctl gpio;
-                                                                                                                     
+
 	gpio.val = val;
 	gpio.mask = mask;
 
@@ -159,29 +159,25 @@ uint32_t gpio_read(void)
 
 #endif
 
-#ifdef RTCONFIG_AMAS 
+#ifdef RTCONFIG_AMAS
 static bool g_swap = FALSE;
 #define htod32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #define dtoh16(i) (g_swap?bcmswap16(i):(uint16)(i))
-char *get_pap_bssid(int unit)
+char *get_pap_bssid(int unit, char bssid_str[])
 {
-	unsigned char bssid[6] = {0};
+	unsigned char bssid[6];
+	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
-	static char bssid_str[sizeof("00:00:00:00:00:00XXX")];
 
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
 
-	if (wl_ioctl(name, WLC_GET_BSSID, bssid, sizeof(bssid)) == 0) {
-		if ( !(!bssid[0] && !bssid[1] && !bssid[2] && !bssid[3] && !bssid[4] && !bssid[5]) ) {
-			snprintf(bssid_str, sizeof(bssid_str), "%02X:%02X:%02X:%02X:%02X:%02X", 
-				(unsigned char)bssid[0], (unsigned char)bssid[1],
-				(unsigned char)bssid[2], (unsigned char)bssid[3],
-				(unsigned char)bssid[4], (unsigned char)bssid[5]);
-		}
-	}
+	memset(bssid_str, 0, 18);
+	if (!wl_ioctl(name, WLC_GET_BSSID, bssid, sizeof(bssid))
+		&& memcmp(bssid, bssid_null, ETHER_ADDR_LEN))
+		ether_etoa((const unsigned char *) &bssid, bssid_str);
 
 	return bssid_str;
 }
@@ -221,65 +217,6 @@ sta_info_t *wl_sta_info(char *ifname, struct ether_addr *ea)
 	}
 
 	return sta;
-}
-
-int get_wlan_service_status(int bssidx, int vifidx)
-{
-	FILE *fp = NULL;
-	char maxassoc_file[128]={0};
-	char buf[64]={0};
-	char maxassoc[64]={0};
-	char tmp[128] = {0}, prefix[] = "wlXXXXXXXXXX_";
-	char *ifname = NULL;
-
-	if(vifidx > 0)
-		snprintf(prefix, sizeof(prefix), "wl%d.%d_", bssidx, vifidx);
-	else
-		snprintf(prefix, sizeof(prefix), "wl%d", bssidx);
-
-	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-
-
-	snprintf(maxassoc_file, sizeof(maxassoc_file), "/tmp/maxassoc.%s", ifname);
-
-	doSystem("wl -i %s maxassoc > %s", ifname, maxassoc_file);
-
-	if ((fp = fopen(maxassoc_file, "r")) != NULL) {
-		fscanf(fp, "%s", buf);
-		fclose(fp);
-	}
-	sscanf(buf, "%s", maxassoc);
-
-	return atoi(maxassoc);
-}
-
-void set_wlan_service_status(int bssidx, int vifidx, int enabled)
-{
-
-	char tmp[128]={0}, prefix[] = "wlXXXXXXXXXX_", wlprefix[] = "wlXXXXXXXXXX_";
-	char *ifname = NULL;
-
-	if(vifidx > 0)
-		snprintf(prefix, sizeof(prefix), "wl%d.%d_", bssidx, vifidx);
-	else
-		snprintf(prefix, sizeof(prefix), "wl%d", bssidx);
-
-	memset(wlprefix, 0x00, sizeof(wlprefix));
-	snprintf(wlprefix, sizeof(wlprefix), "wl%d_", bssidx);	
-
-	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));	
-
-	if (enabled == 0) {
-		doSystem("wl -i %s deauthenticate", ifname);
-		doSystem("wl -i %s maxassoc 0", ifname);
-	}
-	else {
-#ifdef HND_ROUTER
-		doSystem("wl -i %s maxassoc %d", ifname, nvram_get_int(strcat_r(wlprefix, "cfg_maxassoc", tmp)));
-#else										
-		doSystem("wl -i %s maxassoc %d", ifname, nvram_get_int(strcat_r(wlprefix, "maxassoc", tmp)));
-#endif			
-	}
 }
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -361,6 +298,206 @@ PSTA_ERR:
 	return ret;
 }
 #endif
+
+static int is_hex(char c)
+{
+	return (((c >= '0') && (c <= '9')) ||
+		((c >= 'A') && (c <= 'F')) ||
+		((c >= 'a') && (c <= 'f')));
+} /* End of is_hex */
+
+int string2hex(const char *a, unsigned char *e, int len)
+{
+	char tmpBuf[4];
+	int idx, ii=0;
+	for (idx=0; idx<len; idx+=2) {
+		tmpBuf[0] = a[idx];
+		tmpBuf[1] = a[idx+1];
+		tmpBuf[2] = 0;
+		if ( !is_hex(tmpBuf[0]) || !is_hex(tmpBuf[1]))
+			return 0;
+		e[ii++] = (unsigned char) strtol(tmpBuf, (char**)NULL, 16);
+	}
+	return 1;
+} /* End of string2hex */
+
+void add_beacon_vsie(char *hexdata)
+{
+	unsigned char value[256];
+	int pktflag = VNDR_IE_BEACON_FLAG | VNDR_IE_PRBRSP_FLAG;
+	int len = 0;
+
+	len = DOT11_OUI_LEN + strlen(hexdata)/2;
+
+	if (string2hex(hexdata, value, strlen(hexdata)))
+		wl_add_ie(0, pktflag, len, (uchar *) OUI_ASUS, value);
+}
+
+void del_beacon_vsie(char *hexdata)
+{
+	wl_del_ie_with_oui(0, (uchar *) OUI_ASUS);
+}
+#endif
+
+#ifdef RTCONFIG_CFGSYNC
+void update_macfilter_relist()
+{
+	char maclist_buf[4096] = {0};
+	struct maclist *maclist = NULL;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char word[256], *next;
+	char mac2g[32], mac5g[32], *next_mac;
+	int unit = 0;
+	char *wlif_name = NULL;
+	struct ether_addr *ea;
+	unsigned char sta_ea[6] = {0};
+	int ret = 0;
+	char *nv, *nvp, *b;
+	char *reMac, *maclist2g, *maclist5g, *timestamp;
+	char stamac2g[18] = {0};
+	char stamac5g[18] = {0};
+
+	if (nvram_get("cfg_relist"))
+	{
+#ifdef RTCONFIG_AMAS
+		if (nvram_get_int("re_mode") == 1) {
+			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+			if (nv) {
+				while ((b = strsep(&nvp, "<")) != NULL) {
+					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
+						continue;
+					/* first mac for sta 2g of dut */
+					foreach_44 (mac2g, maclist2g, next_mac)
+						break;
+					/* first mac for sta 5g of dut */
+					foreach_44 (mac5g, maclist5g, next_mac)
+						break;
+
+					if (strcmp(reMac, get_lan_hwaddr()) == 0) {
+						snprintf(stamac2g, sizeof(stamac2g), "%s", mac2g);
+						dbg("dut 2g sta (%s)\n", stamac2g);
+						snprintf(stamac5g, sizeof(stamac5g), "%s", mac5g);
+						dbg("dut 5g sta (%s)\n", stamac5g);
+						break;
+					}
+				}
+				free(nv);
+			}
+		}
+#endif
+
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
+
+#ifdef RTCONFIG_AMAS
+			if (nvram_get_int("re_mode") == 1)
+				snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+			else
+#endif
+				snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+			wlif_name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+			maclist = (struct maclist *)maclist_buf;
+			memset(maclist_buf, 0, sizeof(maclist_buf));
+			ea = &(maclist->ea[0]);
+
+			if (nvram_match(strcat_r(prefix, "macmode", tmp), "allow")) {
+				nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
+				if (nv) {
+					while ((b = strsep(&nvp, "<")) != NULL) {
+						if (strlen(b) == 0) continue;
+
+#ifdef RTCONFIG_AMAS
+						if (nvram_get_int("re_mode") == 1) {
+							if (strcmp(b, stamac2g) == 0 ||
+								strcmp(b, stamac5g) == 0)
+								continue;
+						}
+#endif
+						dbg("maclist sta (%s) in %s\n", b, wlif_name);
+						ether_atoe(b, sta_ea);
+						memcpy(ea, sta_ea, sizeof(struct ether_addr));
+						maclist->count++;
+						ea++;
+					}
+					free(nv);
+				}
+
+				nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+				if (nv) {
+					while ((b = strsep(&nvp, "<")) != NULL) {
+						if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
+							continue;
+
+						if (strcmp(reMac, get_lan_hwaddr()) == 0)
+							continue;
+
+						if (unit == 0) {
+							foreach_44 (mac2g, maclist2g, next_mac) {
+								if (check_re_in_macfilter(unit, mac2g))
+									continue;
+								dbg("relist sta (%s) in %s\n", mac2g, wlif_name);
+								ether_atoe(mac2g, sta_ea);
+								memcpy(ea, sta_ea, sizeof(struct ether_addr));
+								maclist->count++;
+								ea++;
+							}
+						}
+						else
+						{
+							foreach_44 (mac5g, maclist5g, next_mac) {
+								if (check_re_in_macfilter(unit, mac5g))
+									continue;
+								dbg("relist sta (%s) in %s\n", mac5g, wlif_name);
+								ether_atoe(mac5g, sta_ea);
+								memcpy(ea, sta_ea, sizeof(struct ether_addr));
+								maclist->count++;
+								ea++;
+							}
+						}
+					}
+					free(nv);
+				}
+
+				dbg("maclist count[%d]\n", maclist->count);
+
+				ret = wl_ioctl(wlif_name, WLC_SET_MACLIST, maclist, sizeof(maclist_buf));
+				if (ret < 0)
+					dbg("[%s] set maclist failed\n", wlif_name);
+			}
+
+			unit++;
+		}
+	}
+}
+
+int wl_get_bw(int unit)
+{
+	char ifname[NVRAM_MAX_PARAM_LEN];
+	int up = 0;
+	chanspec_t chspec = 0;
+	int bw = 0;
+
+	wl_ifname(unit, 0, ifname);
+
+	wl_iovar_getint(ifname, "bss", (int *) &up);
+	wl_iovar_getint(ifname, "chanspec", (int *) &chspec);
+
+	if (up && wf_chspec_valid(chspec)) {
+		if (CHSPEC_IS20(chspec))
+			bw = 20;
+		else if (CHSPEC_IS40(chspec))
+			bw = 40;
+		else if (CHSPEC_IS80(chspec))
+			bw = 80;
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BW160M)
+		else if (CHSPEC_IS160(chspec))
+			bw = 160;
+#endif
+	}
+
+	return bw;
+}
 #endif
 
 int wl_cap(int unit, char *cap_check)

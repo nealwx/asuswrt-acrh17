@@ -71,14 +71,16 @@ function restoreRule(_flag){
 
 function saveSetting(mode){
 	var flag = 0;
+	var remove_passwd = 0;
 	if(ddns_enable == 1 && ddns_server != "WWW.ASUS.COM"){
 		flag = 1;
 	}
 	else{	//ASUS DDNS
 		flag = document.getElementById("transfer_ddns").checked ? 1 : 0;
 	}
+	remove_passwd = document.getElementById("remove_passwd").checked ? 1 : 0;
 
-	location.href='Settings_'+productid+'.CFG?path=' + flag;
+	location.href='Settings_'+productid+'.CFG?path=' + flag+'&remove_passwd='+remove_passwd;
 }
 
 function uploadSetting(){
@@ -129,7 +131,7 @@ function detect_httpd(){
 
     		success: function(){
     				setTimeout("hideLoadingBar();",1000);
-      			location.href = '<% abs_index_page(); %>';
+    				location.href = "/";
   			}
   		});
 }
@@ -207,7 +209,7 @@ function selectSetting() {
 			  						<td bgcolor="#4D595D" valign="top">
 				  						<div>&nbsp;</div>
 				  						<div class="formfonttitle"><#menu5_6#> - <#menu5_6_4#></div>
-										<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+										<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#Setting_save_upload_desc#></div>
 										<table width="100%" border="1" align="center" cellpadding="6" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 	          								<tr>
@@ -256,10 +258,6 @@ function selectSetting() {
 														</div>
 													</div>
 												</td>
-											</tr>
-											<tr id="transfer_ddns_field" style="display:none">
-												<th align="right" style="border-top:none;height:10px;padding:0px">
-												<td colspan = "4" style="border:none;padding:0px;padding-left:14px"><span><input id="transfer_ddns" type="checkbox">Transfer ASUS DDNS name</span></td>
 											</tr>
 											<tr>
 												<th align="right">

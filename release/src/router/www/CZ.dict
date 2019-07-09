@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=Zvolte popis, který nejlépe vyjadřuje výkon vaší služby DSL
-feedback_country=Vaše země / oblast
+feedback_country=Vaše země
 feedback_cancel_capturing=Zrušte záznam ladění
 feedback_current_capturing=Diagnostika vyladí probíhající záznam protokolu
 feedback_capturing_duration=Délka vyladění probíhajícího záznamu protokolu
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Přihlaste se</a> ke svému účtu IFTTT.
 IFTTT_start0=Začněte žít automatizovaně se směrovačem ASUS a příkazy IFTTT!
 IFTTT_start1=Začínáme:
 in=v
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Pásmo
 Interface_target=Cílové Pásmo
 Internet=Internet

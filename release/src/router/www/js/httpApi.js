@@ -346,7 +346,7 @@ var httpApi ={
 		};
 
 		var hadPlugged = function(deviceType){
-			var usbDeviceList = httpApi.hookGet("show_usb_path") || [];
+			var usbDeviceList = httpApi.hookGet("show_usb_path")[0] || [];
 			return (usbDeviceList.join().search(deviceType) != -1)
 		}
 
@@ -578,41 +578,6 @@ var httpApi ={
 		$.get("/update_wlanlog.cgi");
 	},
 
-	"boostKey_support": function(){
-		var ch = eval('<% channel_list_5g(); %>');
-		var retData = {
-				"GAME_BOOST": {
-					"value": 3,
-					"text": "Enable GameBoost",
-					"desc": "Game Boost analyzes network traffic and prioritizes gaming packets, giving games a second level of acceleration for the best possible performance."
-				},
-				"ACS_DFS": {
-					"value": 1,
-					"text": "<#WLANConfig11b_EChannel_dfs#>",
-					"desc": "Auto channel selection includes DFS band allows <#Web_Title2#> to utilize extra 5GHz channels for less interferences and greater bandwidth."
-				},
-				"LED": {
-					"value": 0,
-					"text": "LED On/Off",
-					"desc": "The LED on/off control is used to turn off all LEDs includes Aura light."
-				},
-				"AURA_RGB": {
-					"value": 2,
-					"text": "Aura RGB",
-					"desc": "Aura sync control is used to get Aura control from other ROG devices, if disabled, it will be customized Aura RGB."
-				}
-		};
-		if(isSupport("triband"))
-			ch += eval('<% channel_list_5g_2(); %>');
-		if(ch.indexOf(52) == -1 && ch.indexOf(56) == -1 && ch.indexOf(60) == -1 && ch.indexOf(64) == -1 && ch.indexOf(100) == -1 && ch.indexOf(104) == -1 && ch.indexOf(108) == -1 && ch.indexOf(112) == -1 && ch.indexOf(116) == -1 && ch.indexOf(120) == -1 && ch.indexOf(124) == -1 && ch.indexOf(128) == -1 && ch.indexOf(132) == -1 && ch.indexOf(136) == -1 && ch.indexOf(140) == -1 && ch.indexOf(144) == -1){
-			delete retData.ACS_DFS;
-		}
-		if(qisPostData.hasOwnProperty("sw_mode") && (qisPostData.sw_mode != "1" && qisPostData.sw_mode != "4")){
-			delete retData.GAME_BOOST;
-		}
-		return retData;
-	},
-
 	"getPAPStatus": function(_band){
 		var papStatus = "";
 		var get_ssid = function(_band){
@@ -626,7 +591,16 @@ var httpApi ={
 			return ssid;
 		};
 		var dpsta_rep = (httpApi.nvramGet(["wlc_dpsta"]).wlc_dpsta == "") ? false : true;
-		if(dpsta_rep){
+		if(isSupport("proxysta") && !dpsta_rep){
+			var wlc_psta_state = httpApi.hookGet("wlc_psta_state", true);
+			if(wlc_psta_state.wlc_state == "1" && wlc_psta_state.wlc_state_auth == "0")
+				papStatus = get_ssid(_band);
+			else if(wlc_psta_state.wlc_state == "2" && wlc_psta_state.wlc_state_auth == "1")
+				papStatus = "<#APSurvey_action_ConnectingStatus1#>";
+			else
+				papStatus = "<#Disconnected#>";
+		}
+		else{
 			var wlc_state = "0";
 			if(_band == undefined)
 				wlc_state = httpApi.nvramGet(["wlc_state"]).wlc_state;
@@ -646,16 +620,6 @@ var httpApi ={
 					papStatus = "<#Disconnected#>";
 					break;
 			}
-		}
-		else{
-			var wlc_psta_state = httpApi.hookGet("wlc_psta_state", true);
-			if(wlc_psta_state.wlc_state == "1" && wlc_psta_state.wlc_state_auth == "0")
-				papStatus = get_ssid(_band);
-			else if(wlc_psta_state.wlc_state == "2" && wlc_psta_state.wlc_state_auth == "1")
-				papStatus = "<#APSurvey_action_ConnectingStatus1#>";
-			else
-				papStatus = "<#Disconnected#>";
-
 		}
 		return papStatus;
 	},
@@ -759,8 +723,15 @@ var httpApi ={
 		var returnMacAddr = "";
 		var offset = 0;
 		switch(modelName){
-			case "LYRA_VOICE":
 			case "Lyra":
+				{
+					var last_mac = _macAddr.substr(-1);
+				        if (last_mac == "9") offset = -9;
+				        else if (last_mac == "5" || last_mac == "D") offset = -5;
+				        else offset = -3;
+				}
+				break;
+			case "LYRA_VOICE":
 			case "Lyra_Mini":
 			case "LyraMini":
 				offset = -3;
@@ -786,5 +757,17 @@ var httpApi ={
 
 	"updateClientList": function(){
 		$.post("/applyapp.cgi?action_mode=update_client_list");
+	},
+
+	"hasAiMeshNode": function(){
+		var status = false;
+		if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+			var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+			get_cfg_clientlist.shift();//filter CAP
+			var online_node_list = get_cfg_clientlist.filter(function(item) { return item.online == "1"; });
+			if(online_node_list.length > 0)
+				status = true;
+		}
+		return status;
 	}
 }

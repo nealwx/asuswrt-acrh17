@@ -91,10 +91,7 @@
 <script>
 $(function () {
 	if(amesh_support) {
-		$('<script>')
-			.attr('type', 'text/javascript')
-			.attr('src','/require/modules/amesh.js')
-			.appendTo('head');
+		addNewScript('/require/modules/amesh.js');
 	}
 });
 var sw_mode_orig = '<% nvram_get("sw_mode"); %>';
@@ -254,8 +251,10 @@ function initial(){
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_2g"], sw_mode_orig));
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["rp_express_5g"], sw_mode_orig));
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["mbMode"], sw_mode_orig));
-		$("#operation_mode_bg").append("<br>");
-		$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+		if(ameshNode_support) {
+			$("#operation_mode_bg").append("<br>");
+			$("#operation_mode_bg").append(gen_operation_mode(operation_array["AiMeshMode"], sw_mode_orig));
+		}
 	}
 	else {
 		$("#operation_mode_bg").append(gen_operation_mode(operation_array["routerMode"], sw_mode_orig));
@@ -272,15 +271,15 @@ function initial(){
 
 	document.getElementById("rp_express_2g").style.display = "none";
 	document.getElementById("rp_express_5g").style.display = "none";
-	if(productid.indexOf("RP") != -1){
+	if(isSupport("noRouter")){
 		document.getElementById("routerMode").style.display = "none";
 		document.getElementById("sw_mode1_radio").disabled = true;
-		
-		if(band5g_support){
-			document.getElementById("rp_express_2g").style.display = "";
-			document.getElementById("rp_express_5g").style.display = "";
-		}
 	}
+
+	if(isSupport("rp_express_2g"))
+		document.getElementById("rp_express_2g").style.display = "";
+	if(isSupport("rp_express_5g"))
+		document.getElementById("rp_express_5g").style.display = "";
 
 	if(!repeater_support){
 		document.getElementById("repeaterMode").style.display = "none";
@@ -389,6 +388,11 @@ function saveMode(){
 		document.form.lan_gateway.value = document.form.lan_ipaddr_rt.value;
 		document.form.wlc_psta.value = 0;
 		document.form.wlc_psta.disabled = false;
+
+		if(amesh_support) {
+			document.form.cfg_master.disabled = false;
+			document.form.cfg_master.value = 1;
+		}
 
 		if(sw_mode_orig == '2' || sw_mode_orig == '4'){
 			inputCtrl(document.form.wl0_ssid,1);	
@@ -567,13 +571,18 @@ Media Bridge:        sw_mode: 3, wlc_express: 0, wlc_psta: 1
 function setScenerion(mode, express){
 	if(mode == '2'){
 		document.form.sw_mode.value = 2;
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U")
-			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/re.jpg) center no-repeat", "margin-bottom": "30px"});
+		var url = "/images/New_ui/re.jpg";
+		var height = "";
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			url = "/images/RT-AC66U_V2/re.jpg";
+		else if(odmpid == "RP-AC1900") {
+			url = "/images/RP-AC1900/re.jpg";
+			height = "180px";
+		}
 		else if(based_modelid == "RP-AC53" && tcode == "UK/01")
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/re_UK.jpg) center no-repeat", "margin-bottom": "30px"});
-		else
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/re.jpg) center no-repeat", "margin-bottom": "30px"});
-		
+			url = "/images/New_ui/re_UK.jpg";
+		$("#Senario").css({"height": height, "background": "url(" + url + ") center no-repeat", "margin": "auto", "margin-bottom": "30px"});
+
 		clearTimeout(id_WANunplungHint);
 		$("#Unplug-hint").css("display", "none");
 		if(express == 1){	//Express Way 2.4 GHz
@@ -595,12 +604,18 @@ function setScenerion(mode, express){
 	else if(mode == '3'){		// AP mode
 		document.form.sw_mode.value = 3;
 		document.form.wlc_express.value = 0;
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U")
-			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/ap.jpg) center no-repeat", "margin-bottom": "30px"});
+		var url = "/images/New_ui/ap.jpg";
+		var height = "";
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			url = "/images/RT-AC66U_V2/ap.jpg";
+		else if(odmpid == "RP-AC1900") {
+			url = "/images/RP-AC1900/ap.jpg";
+			height = "180px";
+		}
 		else if(based_modelid == "RP-AC53" && tcode == "UK/01")
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/ap_UK.jpg) center no-repeat", "margin-bottom": "30px"});
-		else
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/ap.jpg) center no-repeat", "margin-bottom": "30px"});
+			url = "/images/New_ui/ap_UK.jpg";
+
+		$("#Senario").css({"height": height, "background": "url(" + url + ") center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		/*if(findasus_support){
 			$("#mode_desc").html("<#OP_AP_desc#><br/><span style=\"color:#FC0\"><#OP_AP_hint#></span>");
 		}else{*/
@@ -631,13 +646,15 @@ function setScenerion(mode, express){
 			pstaDesc += "<br><#OP_MB_desc6#>";
 			pstaDesc += "<br/><span style=\"color:#FC0\"><#deviceDiscorvy4#></span>";
 
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U")
-			$("#Senario").css({"height": "300px", "background": "url(/images/RT-AC66U_V2/mb.jpg) center no-repeat", "margin-bottom": "-40px"});
+		var url = "/images/New_ui/mb.jpg";
+		var height = "250px";
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			url = "/images/RT-AC66U_V2/mb.jpg";
+		else if(odmpid == "RP-AC1900")
+			url = "/images/RP-AC1900/mb.jpg";
 		else if(based_modelid == "RP-AC53" && tcode == "UK/01")
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/mb_UK.jpg) center no-repeat", "margin-bottom": "30px"});
-		else
-			$("#Senario").css({"height": "300px", "background": "url(/images/New_ui/mb.jpg) center no-repeat", "margin-bottom": "-40px"});
-
+			url = "/images/New_ui/mb_UK.jpg";
+		$("#Senario").css({"height": height, "background": "url(" + url + ") center no-repeat", "margin": "auto", "margin-bottom": "0px"});
 		if(!band5g_11ac_support || no_vht_support){			
 			pstaDesc = replaceAll(pstaDesc, " 802\.11ac","");
 			pstaDesc = replaceAll(pstaDesc, " 802\.11AC","");
@@ -662,10 +679,10 @@ function setScenerion(mode, express){
 		document.form.sw_mode.value = 1;
 		document.form.wlc_express.value = 0;
 		
-		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U")
-			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/rt.jpg) center no-repeat", "margin-bottom": "30px"});
+		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
+			$("#Senario").css({"height": "", "background": "url(/images/RT-AC66U_V2/rt.jpg) center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		else
-			$("#Senario").css({"height": "", "background": "url(/images/New_ui/rt.jpg) center no-repeat", "margin-bottom": "30px"});
+			$("#Senario").css({"height": "", "background": "url(/images/New_ui/rt.jpg) center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		var desc = "";
 		if(amesh_support) {
 			desc += "<#AiMesh_GW_desc#>";
@@ -793,6 +810,8 @@ function change_smart_con(v){
 <!-- AC66U's repeater mode -->
 <input type="hidden" name="wlc_psta" value="<% nvram_get("wlc_psta"); %>" disabled>
 <input type="hidden" name="wlc_express" value="<% nvram_get("wlc_express"); %>" disabled>
+<!-- AiMesh -->
+<input type="hidden" name="cfg_master" value="<% nvram_get("cfg_master"); %>" disabled>
 
 <!-- Input SSID and Password block for switching Repeater to Router mode -->
 <div id="routerSSID" class="contentM_qis">
@@ -824,7 +843,7 @@ function change_smart_con(v){
 			<div class="QISGeneralFont" align="left"><#qis_wireless_setting#></div>
 		</tr>
 		<tr>
-			<div style="margin:5px;*margin-left:-5px;"><img style="width: 640px; *width: 640px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
+			<div style="width: 640px; *width: 640px; height: 2px;margin:5px;*margin-left:-5px;" class="splitLine"></div>
 		</tr>
 		<tr>
 			<th width="180" id="wl0_desc_name">2.4GHz - <#Security#></th>
@@ -917,7 +936,7 @@ function change_smart_con(v){
 							<td>
 								<div>&nbsp;</div>
 								<div class="formfonttitle"><#menu5_6#> - <#menu5_6_1_title#></div>
-								<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div class="formfontdesc"><#OP_desc1#></div>
 							</td>
 						</tr>

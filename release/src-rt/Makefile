@@ -199,21 +199,23 @@ $(if $(CONFIG_UBOOT_CONFIG_LTQ_IMAGE_EXTRA_CHECKS), \
 )
 endef
 
+LANTIQ_LINUX_DIR=linux/linux-3.10.104
+
 define build_bluecave_image
-	mips-openwrt-linux-uclibc-objcopy -O binary -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.104/vmlinux ./vmlinux
-	mips-openwrt-linux-uclibc-objcopy -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S linux/linux-3.10.104/vmlinux ./vmlinux.elf
-	cp -fpR linux/linux-3.10.104/vmlinux ./vmlinux.debug
+	mips-openwrt-linux-uclibc-objcopy -O binary -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S $(LANTIQ_LINUX_DIR)/vmlinux ./vmlinux
+	mips-openwrt-linux-uclibc-objcopy -R .reginfo -R .notes -R .note -R .comment -R .mdebug -R .note.gnu.build-id -S $(LANTIQ_LINUX_DIR)/vmlinux ./vmlinux.elf
+	cp -fpR $(LANTIQ_LINUX_DIR)/vmlinux ./vmlinux.debug
 	cp ./vmlinux ./vmlinux-easy350_anywan_router_800m
 	tools/dtc -O dtb -o ./easy350_anywan_router_800m.dtb ./proprietary/dts/easy350_anywan_router_800m.dts
 	tools/host/bin/patch-dtb ./vmlinux-easy350_anywan_router_800m ./easy350_anywan_router_800m.dtb 32768
 	tools/host/bin/lzma e ./vmlinux-easy350_anywan_router_800m ./vmlinux-easy350_anywan_router_800m.lzma
 	mv ./vmlinux-easy350_anywan_router_800m.lzma ./vmlinux.lzma
-	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel -a 0x80002000 -C lzma -e 0x80002000 -n 'MIPS OpenWrt Linux-3.10.104' -d ./vmlinux.lzma ./uImage
+	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel -a 0x80002000 -C lzma -e 0x80002000 -n 'MIPS OpenWrt $(LANTIQ_LINUX_DIR)' -d ./vmlinux.lzma ./uImage
 	len2=`wc -c ./vmlinux.lzma | awk '{ printf $$1 }'` ; \
 	echo "Raymond: $$len2"
 	len=`wc -c ./vmlinux.lzma | awk '{ printf $$1 }'`; pad=`expr  131072 - $$len %  131072`; pad=`expr $$pad %  131072`; pad=`expr $$pad -  64`; [ $$pad -lt 0 ] && pad=0; echo pad is $$pad; echo len is $$len; cat ./vmlinux.lzma > ./vmlinux.lzma.padded; dd if=/dev/zero of=./vmlinux.lzma.padded bs=1 count=$$pad seek=$$len
-	load_addr=0x$(shell grep -w _text linux/linux-3.10.104/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
-	entry_addr=0x$(shell grep -w kernel_entry linux/linux-3.10.104/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
+	load_addr=0x$(shell grep -w _text $(LANTIQ_LINUX_DIR)/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
+	entry_addr=0x$(shell grep -w kernel_entry $(LANTIQ_LINUX_DIR)/System.map 2>/dev/null| awk '{ printf "%s", $$1 }'); \
 	tools/u-boot-2010.06/tools/mkimage -A mips -O linux -T kernel \
 		-a $(s_load_addr) -C $(compression_type) -e $(s_entry_addr) \
 	-n '$(image_header)' $(call bluecave_mkimage_extra_checks) \
@@ -484,7 +486,7 @@ ifeq ($(CONFIG_RALINK),y)
 	PAD2=`expr $${ISIZE} - $${KSIZE} - $${RSIZE}` ; \
 	RFSOFFSET=`expr 64 + $${KSIZE} + $${PAD2}` ; \
 	echo "PAD2: $${PAD2}" ; \
-	if [ "$(BUILD_NAME)" = "RT-N56UB1" ] || [ "$(BUILD_NAME)" = "RT-N56UB2" ] || [ "$(BUILD_NAME)" = "RT-AC1200GA1" ] || [ "$(BUILD_NAME)" = "RT-AC1200GU" ] || [ "$(BUILD_NAME)" = "RP-AC56" ] || [ "$(BUILD_NAME)" = "RP-AC87" ] || [ "$(BUILD_NAME)" = "RT-AC85U" ] || [ "$(BUILD_NAME)" = "RT-AC85P" ] || [ "$(BUILD_NAME)" = "RT-AC65U" ] || [ "$(BUILD_NAME)" = "RT-N800HP" ] || [ "$(BUILD_NAME)" = "RT-ACRH26" ]; then \
+	if [ "$(BUILD_NAME)" = "RT-N56UB1" ] || [ "$(BUILD_NAME)" = "RT-N56UB2" ] || [ "$(BUILD_NAME)" = "RT-AC1200GA1" ] || [ "$(BUILD_NAME)" = "RT-AC1200GU" ] || [ "$(BUILD_NAME)" = "RP-AC56" ] || [ "$(BUILD_NAME)" = "RP-AC87" ] || [ "$(BUILD_NAME)" = "RT-AC85U" ] || [ "$(BUILD_NAME)" = "RT-AC85P" ] || [ "$(BUILD_NAME)" = "RT-AC65U" ] || [ "$(BUILD_NAME)" = "RT-N800HP" ]; then \
 		asustools/mkimage -A mips -O linux -T kernel -C lzma -a 80001000 -e $${ENTRY} -r $${RFSOFFSET} \
 		-n $(BUILD_NAME) -V "$(KERNEL_VER)" "$(FS_VER)"  "$(SERIALNO)" "$(EXTENDNO)" "0" "0" "0" "0" "0" "0"  \
 		-d $(PLATFORMDIR)/zImage.img image/$(IMGNAME).trx ; \
@@ -694,12 +696,13 @@ export_config:
 kernel_patch:
 ifeq ($(CONFIG_LANTIQ),y)
 	cd proprietary; rm -rf ltq_eip97_1.2.25; tar zxf ltq_eip97_1.2.25.tar.gz
-	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq_05.04.00.61.7_AE.tgz -C ${SRCBASE}/router/ ; mv ${SRCBASE}/router/rom_lantiq_05.04.00.61.7_AE ${SRCBASE}/router/rom_lantiq/
+	cd proprietary; rm -rf ${SRCBASE}/router/rom_lantiq/; tar zxf rom_lantiq_05.04.00.131.tgz -C ${SRCBASE}/router/ ; mv ${SRCBASE}/router/rom_lantiq_05.04.00.131 ${SRCBASE}/router/rom_lantiq/
+	cp patches/iptables-1.4.21/extensions/* ${SRCBASE}/router/iptables-1.4.21/extensions/
 	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
 	# rm -f ${SRCBASE}/router/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
 	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan0.bin
 	# rm -f proprietary/rom_lantiq/opt/lantiq/wave/images/cal_wlan1.bin
-	cd proprietary; cp -rf rom_lantiq_05.04.00.61.7_AE_patch/* ${SRCBASE}/router/rom_lantiq/
+	cd proprietary; cp -rf rom_lantiq_05.04.00.131_patch/* ${SRCBASE}/router/rom_lantiq/
 	# cp -f proprietary/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin linux/linux-3.10.104/firmware/lantiq/phy11g_ip_BE.bin
 endif
 
@@ -815,7 +818,7 @@ cleankernel:
 	$(MAKE) distclean || true; \
 	cp -p save-config .config || true
 
-kernel:	
+kernel:
 	$(MAKE) -C router kernel
 	@[ ! -e $(KERNEL_BINARY) ] || ls -l $(KERNEL_BINARY)
 
@@ -960,10 +963,6 @@ define RouterOptions
 		sed -i "/RTCONFIG_BCMWL6A/d" $(1); \
 		echo "RTCONFIG_BCMWL6A=y" >>$(1); \
 	fi; \
-	if [ "$(BCM4708)" = "y" ]; then \
-		sed -i "/RTCONFIG_BCM4708/d" $(1); \
-		echo "RTCONFIG_BCM4708=y" >>$(1); \
-	fi; \
 	if [ "$(ARM)" = "y" ]; then \
 		sed -i "/RTCONFIG_BCMARM/d" $(1); \
 		echo "RTCONFIG_BCMARM=y" >>$(1); \
@@ -1007,6 +1006,19 @@ define RouterOptions
 	if [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ]; then \
 		sed -i "/RTCONFIG_PARENTALCTRL/d" $(1); \
 		echo "RTCONFIG_PARENTALCTRL=y" >>$(1); \
+		if [ "$(CONFIG_BCMWL5)" = "y" ] && [ "$(ARM)" = "y" ]; then \
+			sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
+			echo "RTCONFIG_CONNTRACK=y" >>$(1); \
+		fi; \
+	fi; \
+	if [ "$(OPENSSL)" = "11" -o "$(OPENSSL11)" = "y" ]; then \
+		sed -i "/RTCONFIG_OPENSSL/d" $(1); \
+		echo "# RTCONFIG_OPENSSL10 is not set" >>$(1); \
+		echo "RTCONFIG_OPENSSL11=y" >>$(1); \
+	elif [ "$(OPENSSL)" = "10" -o "$(OPENSSL10)" = "y" ]; then \
+		sed -i "/RTCONFIG_OPENSSL/d" $(1); \
+		echo "RTCONFIG_OPENSSL10=y" >>$(1); \
+		echo "# RTCONFIG_OPENSSL11 is not set" >>$(1); \
 	fi; \
 	if [ "$(YANDEXDNS)" = "y" ]; then \
 		sed -i "/RTCONFIG_YANDEXDNS/d" $(1); \
@@ -1048,6 +1060,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_CONCURRENTREPEATER/d" $(1); \
 		echo "RTCONFIG_CONCURRENTREPEATER=y" >>$(1); \
 	fi; \
+	if [ "$(REPEATER_STAALLBAND)" = "y" ]; then \
+		sed -i "/RTCONFIG_REPEATER_STAALLBAND/d" $(1); \
+		echo "RTCONFIG_REPEATER_STAALLBAND=y" >>$(1); \
+	fi; \
 	if [ "$(IXIAEP)" = "y" ]; then \
 		sed -i "/RTCONFIG_IXIAEP/d" $(1); \
 		echo "RTCONFIG_IXIAEP=y" >>$(1); \
@@ -1067,6 +1083,10 @@ define RouterOptions
 	if [ "$(TCPDUMP)" = "y" ]; then \
 		sed -i "/RTCONFIG_TCPDUMP/d" $(1); \
 		echo "RTCONFIG_TCPDUMP=y" >>$(1); \
+	fi; \
+	if [ "$(DUMP4000)" = "y" ]; then \
+		sed -i "/RTCONFIG_DUMP4000/d" $(1); \
+		echo "RTCONFIG_DUMP4000=y" >>$(1); \
 	fi; \
 	if [ "$(TRACEROUTE)" = "y" ]; then \
 		sed -i "/RTCONFIG_TRACEROUTE/d" $(1); \
@@ -1111,18 +1131,10 @@ define RouterOptions
 	if [ "$(NEWSSID_REV2)" = "y" ]; then \
 		sed -i "/RTCONFIG_NEWSSID_REV2/d" $(1); \
 		echo "RTCONFIG_NEWSSID_REV2=y" >>$(1); \
-		if [ "$(NEWSSID_REV4)" = "y" ]; then \
-			sed -i "/RTCONFIG_NEWSSID_REV4/d" $(1); \
-			echo "RTCONFIG_NEWSSID_REV4=y" >>$(1); \
-		fi; \
 	fi; \
 	if [ "$(NEW_APP_ARM)" = "y" ]; then \
 		sed -i "/RTCONFIG_NEW_APP_ARM/d" $(1); \
 		echo "RTCONFIG_NEW_APP_ARM=y" >>$(1); \
-	fi; \
-	if [ "$(NEWSSID_REV2)" = "y" ]; then \
-		sed -i "/RTCONFIG_NEWSSID_REV2/d" $(1); \
-		echo "RTCONFIG_NEWSSID_REV2=y" >>$(1); \
 	fi; \
 	if [ "$(FINDASUS)" = "y" ]; then \
 		sed -i "/RTCONFIG_FINDASUS/d" $(1); \
@@ -1306,6 +1318,9 @@ define RouterOptions
 	if [ "$(SYSSTATE)" = "y" ]; then \
 		sed -i "/RTCONFIG_SYSSTATE/d" $(1); \
 		echo "RTCONFIG_SYSSTATE=y" >>$(1); \
+	else \
+		sed -i "/RTCONFIG_SYSSTATE/d" $(1); \
+		echo "# RTCONFIG_SYSSTATE is not set" >>$(1); \
 	fi; \
 	if [ "$(USER_LOW_RSSI)" = "y" ]; then \
 		sed -i "/RTCONFIG_USER_LOW_RSSI/d" $(1); \
@@ -1318,6 +1333,10 @@ define RouterOptions
 	if [ "$(NEW_USER_LOW_RSSI)" = "y" ]; then \
 		sed -i "/RTCONFIG_NEW_USER_LOW_RSSI/d" $(1); \
 		echo "RTCONFIG_NEW_USER_LOW_RSSI=y" >>$(1); \
+	fi; \
+	if [ "$(CONNDIAG)" = "y" ]; then \
+		sed -i "/RTCONFIG_CONNDIAG/d" $(1); \
+		echo "RTCONFIG_CONNDIAG=y" >>$(1); \
 	fi; \
 	if [ "$(USB)" = "USB" ]; then \
 		sed -i "/RTCONFIG_USB\b/d" $(1); \
@@ -1334,7 +1353,7 @@ define RouterOptions
 			sed -i "/RTCONFIG_EXT4FS/d" $(1); \
 			echo "RTCONFIG_EXT4FS=y" >>$(1); \
 		fi; \
-		if [ "$(TFAT)" != "" -a "$(TFAT)" != "n" ]; then \
+		if [ "$(TFAT)" = "y" ] || [ "$(findstring open, $(TFAT))" = "open" ]; then \
 			sed -i "/RTCONFIG_TFAT/d" $(1); \
 			echo "RTCONFIG_TFAT=y" >>$(1); \
 			if [ "$(TFAT)" != "y" ]; then \
@@ -1955,10 +1974,6 @@ define RouterOptions
 		sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \
 		echo "RTCONFIG_HAPDEVENT=y" >>$(1); \
 	fi; \
-	if [ "$(ADBLOCK)" = "y" ]; then \
-		sed -i "/RTCONFIG_ADBLOCK/d" $(1); \
-		echo "RTCONFIG_ADBLOCK=y" >>$(1); \
-	fi; \
 	if [ "$(TRAFFIC_LIMITER)" = "y" ]; then \
 		sed -i "/RTCONFIG_TRAFFIC_LIMITER/d" $(1); \
 		echo "RTCONFIG_TRAFFIC_LIMITER=y" >>$(1); \
@@ -2043,6 +2058,11 @@ define RouterOptions
 	if [ "$(DHDAP)" = "y" ]; then \
 		sed -i "/RTCONFIG_DHDAP/d" $(1); \
 		echo "RTCONFIG_DHDAP=y" >>$(1); \
+		if [ "$(BW160M)" = "y" ]; then \
+			echo "RTCONFIG_BW160M=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_BW160M is not set" >>$(1); \
+		fi; \
 	fi; \
 	if [ "$(DPSTA)" = "y" ]; then \
 		sed -i "/RTCONFIG_DPSTA/d" $(1); \
@@ -2402,6 +2422,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_PERMISSION_MANAGEMENT/d" $(1); \
 		echo "RTCONFIG_PERMISSION_MANAGEMENT=y" >>$(1); \
 	fi; \
+	if [ "$(CONNTRACK)" = "y" ]; then \
+		sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
+		echo "RTCONFIG_CONNTRACK=y" >>$(1); \
+ 	fi; \
 	if [ "$(DETWAN)" = "y" ]; then \
 		sed -i "/RTCONFIG_DETWAN/d" $(1); \
 		echo "RTCONFIG_DETWAN=y" >>$(1); \
@@ -2421,10 +2445,6 @@ define RouterOptions
 	if [ "$(RALINK)" = "y" -o "$(QCA)" = "y" -o "$(REALTEK)" = "y" ]; then \
 		sed -i "/CONFIG_LIBBCM/d" $(1); \
 		echo "# CONFIG_LIBBCM is not set" >>$(1); \
-	fi; \
-	if [ "$(CFGSYNC)" = "y" ]; then \
-		sed -i "/RTCONFIG_CFGSYNC/d" $(1); \
-		echo "RTCONFIG_CFGSYNC=y" >>$(1); \
 	fi; \
 	if [ "$(WEBMON)" = "y" ]; then \
 		sed -i "/RTCONFIG_WEBMON/d" $(1); \
@@ -2465,9 +2485,17 @@ define RouterOptions
 			sed -i "/RTCONFIG_ETHBACKHAUL/d" $(1); \
 			echo "RTCONFIG_ETHBACKHAUL=y" >>$(1); \
 		fi; \
-		if [ "$(DUAL_BACKHAUL)" = "y" ]; then \
-			sed -i "/RTCONFIG_DUAL_BACKHAUL/d" $(1); \
-			echo "RTCONFIG_DUAL_BACKHAUL=y" >>$(1); \
+		if [ "$(HIDDEN_BACKHAUL)" = "y" ]; then \
+			sed -i "/RTCONFIG_HIDDEN_BACKHAUL/d" $(1); \
+			echo "RTCONFIG_HIDDEN_BACKHAUL=y" >>$(1); \
+		fi; \
+		if [ "$(HIDDEN_BACKHAUL)" = "y" ]; then \
+			sed -i "/RTCONFIG_HIDDEN_BACKHAUL/d" $(1); \
+			echo "RTCONFIG_HIDDEN_BACKHAUL=y" >>$(1); \
+		fi; \
+		if [ "$(QCA_LBD)" = "y" ]; then \
+			sed -i "/RTCONFIG_QCA_LBD/d" $(1); \
+			echo "RTCONFIG_QCA_LBD=y" >>$(1); \
 		fi; \
 	fi; \
 	if [ "$(AUTHSUPP)" = "y" ]; then \
@@ -2489,10 +2517,8 @@ define RouterOptions
 	if [ "$(AMAS)" = "y" ]; then \
 		sed -i "/RTCONFIG_AMAS/d" $(1); \
 		echo "RTCONFIG_AMAS=y" >>$(1); \
-		if [ "$(LANTIQ)" != "y" ]; then \
-			sed -i "/RTCONFIG_DPSTA/d" $(1); \
-			echo "RTCONFIG_DPSTA=y" >>$(1); \
-		fi; \
+		sed -i "/RTCONFIG_DBLOG/d" $(1); \
+		echo "RTCONFIG_DBLOG=y" >>$(1); \
 		if [ "$(DISABLE_REPEATER_UI)" = "y" ] ; then \
 			sed -i "/RTCONFIG_DISABLE_REPEATER_UI/d" $(1); \
 			echo "# RTCONFIG_DISABLE_REPEATER_UI is not set" >>$(1); \
@@ -2503,10 +2529,30 @@ define RouterOptions
 		echo "RTCONFIG_MASTER_DET=y" >>$(1); \
 		sed -i "/RTCONFIG_ADV_RAST/d" $(1); \
 		echo "RTCONFIG_ADV_RAST=y" >>$(1); \
-		sed -i "/RTCONFIG_WLCEVENTD/d" $(1); \
-		echo "RTCONFIG_WLCEVENTD=y" >>$(1); \
+		if [ "$(LANTIQ)" = "y" ]; then \
+			sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \
+			echo "RTCONFIG_HAPDEVENT=y" >>$(1); \
+			sed -i "/RTCONFIG_WPS_ENROLLEE/d" $(1); \
+			echo "RTCONFIG_WPS_ENROLLEE=y" >>$(1); \
+		elif [ "$(QCA)" = "y" ]; then \
+			sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \
+			echo "RTCONFIG_HAPDEVENT=y" >>$(1); \
+			sed -i "/RTCONFIG_WPS_ENROLLEE/d" $(1); \
+			echo "RTCONFIG_WPS_ENROLLEE=y" >>$(1); \
+		else \
+			sed -i "/RTCONFIG_WLCEVENTD/d" $(1); \
+			echo "RTCONFIG_WLCEVENTD=y" >>$(1); \
+			sed -i "/RTCONFIG_DPSTA/d" $(1); \
+			echo "RTCONFIG_DPSTA=y" >>$(1); \
+		fi; \
 		sed -i "/RTCONFIG_LIBASUSLOG/d" $(1); \
 		echo "RTCONFIG_LIBASUSLOG=y" >>$(1); \
+	fi; \
+	sed -i "/RTCONFIG_LYRA_5G_SWAP/d" $(1); \
+	if [ "$(LYRA_5G_SWAP)" = "y" ]; then \
+		echo "RTCONFIG_LYRA_5G_SWAP=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_LYRA_5G_SWAP is not set" >>$(1); \
 	fi; \
 	if [ "$(NO_SELECT_CHANNEL)" = "y" ]; then \
 		sed -i "/RTCONFIG_NO_SELECT_CHANNEL/d" $(1); \
@@ -2559,9 +2605,17 @@ define RouterOptions
 		sed -i "/RTCONFIG_PORT2_DEVICE/d" $(1); \
 		echo "RTCONFIG_PORT2_DEVICE=y" >>$(1); \
 	fi; \
-	if [ "$(WTF_REDEEM)" = "y" ]; then \
-		sed -i "/RTCONFIG_WTF_REDEEM/d" $(1); \
-		echo "RTCONFIG_WTF_REDEEM=y" >>$(1); \
+	if [ "$(ETHOBD)" = "y" ]; then \
+		sed -i "/RTCONFIG_ETHOBD/d" $(1); \
+		echo "RTCONFIG_ETHOBD=y" >>$(1); \
+	fi; \
+	if [ "$(DWB)" = "y" ]; then \
+		sed -i "/RTCONFIG_DWB/d" $(1); \
+		echo "RTCONFIG_DWB=y" >>$(1); \
+	fi; \
+	if [ "$(NO_TRY_DWB_PROFILE)" = "y" ]; then \
+		sed -i "/RTCONFIG_NO_TRY_DWB_PROFILE/d" $(1); \
+		echo "RTCONFIG_NO_TRY_DWB_PROFILE=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))
@@ -2754,7 +2808,7 @@ define BusyboxOptions
 		sed -i "/CONFIG_DEVMEM/d" $(1); \
 		echo "CONFIG_DEVMEM=y" >>$(1); \
 	fi; \
-	if [ "$(MAPAC1300)" = "y" ] || [ "$(MAPAC2200)" = "y" ] || [ "$(VZWAC1300)" = "y" ]; then \
+	if [ "$(MAPAC1300)" = "y" ] || [ "$(MAPAC2200)" = "y" ] || [ "$(VZWAC1300)" = "y" ] || [ "$(RTAC92U)" = "y" ] ; then \
 		sed -i "/CONFIG_TFTP/d" $(1); \
 		echo "CONFIG_TFTP=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_TFTP_GET/d" $(1); \
@@ -2904,6 +2958,14 @@ define BusyboxOptions
 		echo "CONFIG_FEATURE_BASH_IS_ASH=y" >>$(1); \
 		sed -i "/CONFIG_FEATURE_BASH_IS_NONE/d" $(1); \
 		echo "# CONFIG_FEATURE_BASH_IS_NONE is not set" >>$(1); \
+		sed -i "/CONFIG_SPLIT/d" $(1); \
+		echo "CONFIG_SPLIT=y" >>$(1); \
+	fi; \
+	if [ "$(CONNDIAG)" = "y" ]; then \
+		sed -i "/CONFIG_IPCRM/d" $(1); \
+		echo "CONFIG_IPCRM=y" >>$(1); \
+		sed -i "/CONFIG_IPCS/d" $(1); \
+		echo "CONFIG_IPCS=y" >>$(1); \
 	fi; \
 	)
 	$(call platformBusyboxOptions, $(1))
@@ -3013,7 +3075,7 @@ if [ "$(TUNEK)" != "n" ]; then \
 		sed -i "/CONFIG_BUG/d" $(1); \
 		echo "# CONFIG_BUG is not set" >>$(1); \
 	fi; \
-	if [ "$(RTN19)" = "y" ] || [ "$(PLN12)" = "y" ] || [ "$(PLAC56)" = "y" ] || [ "$(RPAC66)" = "y" ] || [ "$(RPAC51)" = "y" ] ; then \
+	if [ "$(PLN12)" = "y" ] || [ "$(PLAC56)" = "y" ] || [ "$(RPAC66)" = "y" ] || [ "$(RPAC51)" = "y" ] ; then \
 		sed -i "/CONFIG_USB/d" $(1); \
 		echo "# CONFIG_USB is not set" >>$(1); \
 		sed -i "/CONFIG_USB_SUPPORT/d" $(1); \
@@ -3576,11 +3638,18 @@ fi; \
 	else \
 		echo "CONFIG_LINUX_MTD=$(LINUX_MTD)" >>$(1); \
 	fi; \
-	sed -i "/CONFIG_NF_CONNTRACK_EVENTS/d" $(1); \
-	if [ "$(BWDPI)" = "y" ] || [ "$(HND_ROUTER)" = "y" ]; then \
+	if [ "$(BWDPI)" = "y" ] || [ "$(HND_ROUTER)" = "y" ] || [ "$(CONNTRACK)" = "y" ] || [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ] && [ "$(CONFIG_BCMWL5)" = "y" ] && [ "$(ARM)" = "y" ]; then \
 		echo "CONFIG_NF_CONNTRACK_EVENTS=y" >>$(1); \
 	else \
 		echo "# CONFIG_NF_CONNTRACK_EVENTS is not set" >>$(1); \
+	fi; \
+	if [ "$(CONNTRACK)" = "y" ] || [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ] && [ "$(CONFIG_BCMWL5)" = "y" ] && [ "$(ARM)" = "y" ]; then \
+		sed -i "/CONFIG_NF_CT_NETLINK/d" $(1); \
+		echo "CONFIG_NF_CT_NETLINK=y" >>$(1); \
+	fi; \
+	if [ "$(BWDPI)" = "y" ] && [ "$(LANTIQ)" = "y" ]; then \
+		sed -i "/CONFIG_NF_CONNTRACK_EVENTS/d" $(1); \
+		echo "CONFIG_NF_CONNTRACK_EVENTS=y" >>$(1); \
 	fi; \
 	if [ "$(BWDPI)" = "y" ]; then \
 		sed -i "/CONFIG_NET_SCH_HTB/d" $(1); \

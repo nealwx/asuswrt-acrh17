@@ -47,6 +47,9 @@
 	background-position: 0px 0px;
 }
 .wl1_icon_on{
+	background-position: 0px 144px;
+}
+.wl1_1_icon_on{
 	background-position: 0px 96px;
 }
 .wl2_icon_on{
@@ -56,6 +59,9 @@
 	background-position: 48px 0px;
 }
 .wl1_icon_off{
+	background-position: 48px 144px;
+}
+.wl1_1_icon_off{
 	background-position: 48px 96px;
 }
 .wl2_icon_off{
@@ -175,12 +181,23 @@ function check_wireless(){
 	$("#wl0_icon").addClass(temp);
 
 	//check 5 GHz-1
-	temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off"
-	$("#wl1_icon").addClass(temp);
+	if(band5g_support){
+		temp = (wl1_radio == "1") ? "wl1_icon_on" : "wl1_icon_off"
+		if(band5g2_support){
+			temp = (wl1_radio == "1") ? "wl1_1_icon_on" : "wl1_1_icon_off"
+		}
+
+		$("#wl1_icon").show();
+		$("#wl1_icon").addClass(temp);
+	}
 
 	//check 5 GHz-2
-	temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off"
-	$("#wl2_icon").addClass(temp);
+	if(band5g2_support){
+		temp = (wl2_radio == "1") ? "wl2_icon_on" : "wl2_icon_off"
+
+		$("#wl2_icon").show();
+		$("#wl2_icon").addClass(temp);
+	}
 }
 
 function drawChart(data){
@@ -236,7 +253,15 @@ function update_tarffic() {
     		}
 
     		last_rx = current_rx;
-    		current_rx = netdev.INTERNET.rx;
+    		if(netdev.INTERNET){
+    			current_rx = netdev.INTERNET.rx;
+    		}
+    		else{
+    			current_rx = netdev.WIRED.rx + netdev.WIRELESS0.rx + netdev.WIRELESS1.rx;
+    			if( netdev.WIRELESS2){
+    				current_rx += netdev.WIRELESS2.rx;
+    			}
+    		}
 
     		var diff_tx = 0;
     		if(last_tx != 0){
@@ -249,7 +274,16 @@ function update_tarffic() {
     		}
 
     		last_tx = current_tx;
-    		current_tx = netdev.INTERNET.tx;
+    		if(netdev.INTERNET){
+    			current_tx = netdev.INTERNET.tx;
+    		}
+    		else{
+    			current_tx = netdev.WIRED.tx + netdev.WIRELESS0.tx + netdev.WIRELESS1.tx;
+    			if( netdev.WIRELESS2){
+    				current_tx += netdev.WIRELESS2.tx;
+    			}
+    		}
+    		
     		traffic_bar(diff_tx, diff_rx);
     		refineData(diff_tx, diff_rx);
 			setTimeout("update_tarffic();drawChart(dataArray);", 2000);
@@ -543,18 +577,18 @@ var netoolApi = {
 												<div style="font-size: 18px;color:#BFBFBF"><#ROG_WIRELESS_STATE#></div>
 												<div style="text-align: right;margin-right:20px;">
 													<div id="wl0_icon" class="wl_icon"></div>
-													<div id="wl1_icon" class="wl_icon"></div>
-													<div id="wl2_icon" class="wl_icon"></div>
+													<div id="wl1_icon" class="wl_icon" style="display:none"></div>
+													<div id="wl2_icon" class="wl_icon" style="display:none"></div>
 												</div>
 
 											</div>
-											<div style="margin: 25px 0 0 90px;text-align: center;">
+											<div id="wan_state_field" style="margin: 25px 0 0 90px;text-align: center;">
 												<div style="font-size: 18px;color:#BFBFBF"><#ROG_WAN_STATE#></div>
 												<div id="wan_state" style="font-size: 18px;margin-top:10px;color:#57BDBA"></div>		
 											</div>
 										</div>
 										<div style="display: inline-block;width:270px;">
-											<div style="font-size: 22px;margin-top: 25px;text-align: center;color:#BFBFBF"><#statusTitle_Internet#></div>
+											<div id="internet_title" style="font-size: 22px;margin-top: 25px;text-align: center;color:#BFBFBF"><#statusTitle_Internet#></div>
 											<div id="wan_state_icon" class="wan_state_icon "></div>
 										</div>	
 										<div style="display: inline-block;width:180px;vertical-align: top;">

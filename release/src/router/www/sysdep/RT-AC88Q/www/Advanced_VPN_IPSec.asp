@@ -122,6 +122,7 @@
 }
 </style>
 <script>
+var ipsec_hw_crypto_enable_ori = decodeURIComponent('<% nvram_char_to_ascii("","ipsec_hw_crypto_enable"); %>');
 var subnetIP_support_IPv6 = false;
 <% wanlink(); %>
 <% secondary_wanlink(); %>
@@ -240,6 +241,7 @@ function initial(){
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "IPSEC"));
 
 	if(document.general_form.ipsec_server_enable.value == "1") {
+		showhide("tr_general_hw_crypto", 1);
 		showhide("tr_general_ike_isakmp", 1);
 		showhide("tr_general_ike_isakmp_nat", 1);
 		showhide("tr_general_log", 1);
@@ -250,6 +252,7 @@ function initial(){
 		ipsec_server_enable = 1;
 	}
 	else{
+		showhide("tr_general_hw_crypto", 0);
 		showhide("tr_general_ike_isakmp", 0);
 		showhide("tr_general_ike_isakmp_nat", 0);
 		showhide("tr_general_log", 0);
@@ -475,6 +478,26 @@ function showIPSecClients(profileName, e) {
 	$("#connection_ipsec_profile_panel").html(html);
 }
 function show_profilelist() {
+	var get_ipsec_vpn_client_count = function() {
+		var active_count = 0;
+		var get_ipsec_vpn_client_status = function(_profile) {
+			if(_profile == "")
+				return 0;
+			else {
+				if(_profile.slice(-1) == "1")
+					return 1;
+				else
+					return 0;
+			}
+		};
+		active_count += get_ipsec_vpn_client_status(decodeURIComponent('<% nvram_char_to_ascii("","ipsec_profile_client_1"); %>'));
+		active_count += get_ipsec_vpn_client_status(decodeURIComponent('<% nvram_char_to_ascii("","ipsec_profile_client_2"); %>'));
+		active_count += get_ipsec_vpn_client_status(decodeURIComponent('<% nvram_char_to_ascii("","ipsec_profile_client_3"); %>'));
+		active_count += get_ipsec_vpn_client_status(decodeURIComponent('<% nvram_char_to_ascii("","ipsec_profile_client_4"); %>'));
+		active_count += get_ipsec_vpn_client_status(decodeURIComponent('<% nvram_char_to_ascii("","ipsec_profile_client_5"); %>'));
+		return active_count;
+	};
+
 	ipsec_type_array = {"type_4" : ["Host-to-Net VPN Server", "4"], "type_1" : ["Net-to-Net VPN Server", "1"]};//untranslated
 	all_profile_subnet_list = "";
 	control_profile_flag = true;
@@ -511,8 +534,20 @@ function show_profilelist() {
 					if(ipsec_profilelist_arraylist[i][1] == "1" || ipsec_profilelist_arraylist[i][1] == "3" || ipsec_profilelist_arraylist[i][1] == "4") {	//Server status
 						if(ipsec_connect_status_array[ipsec_profilelist_arraylist[i][2]]) {
 							var connected_count = (ipsec_connect_status_array[ipsec_profilelist_arraylist[i][2]].split("<").length - 1);
-							code +='<td width="15%"><a class="hintstyle2" href="javascript:void(0);" onClick="showIPSecClients(\''+ipsec_profilelist_arraylist[i][2]+'\', event);">';
-							code +='<#btn_Enabled#>(' + connected_count + ')</a></td>';
+							code +="<td width='15%'>";
+							var ipsec_connect_status_text = "Available";/*untranslated*/
+							var ipsec_connect_status_css = "";
+							if(ipsec_profilelist_arraylist[i][1] == "4") {
+								var ipsec_hw_crypto_enable = decodeURIComponent('<% nvram_char_to_ascii("","ipsec_hw_crypto_enable"); %>');
+								var ipsec_hw_crypto_full_count = (ipsec_hw_crypto_enable == "1") ? 8 : 16;
+								ipsec_hw_crypto_full_count = ipsec_hw_crypto_full_count - get_ipsec_vpn_client_count();
+								if(connected_count >= ipsec_hw_crypto_full_count) {
+									ipsec_connect_status_text = "Full";/*untranslated*/
+									ipsec_connect_status_css = "color:#FF0000;border-bottom-color:#FF0000;";
+								}
+							}
+							code +='<a style="' + ipsec_connect_status_css +'" class="hintstyle2" href="javascript:void(0);" onClick="showIPSecClients(\''+ipsec_profilelist_arraylist[i][2]+'\', event);">';
+							code += "" + ipsec_connect_status_text + "(" + connected_count + ")</a></td>";
 						}
 						else {
 							code +='<td width="15%">-</td>';
@@ -567,9 +602,12 @@ function gen_subnet_input(_type, _idx, _value) {
 	subnet_input_obj.className = "input_25_table";
 	subnet_input_obj.id = "ipsec_" + _type + "_subnet_" + _idx;
 	subnet_input_obj.value = _value;
+	subnet_input_obj.autocomplete = "off";
+	subnet_input_obj.autocapitalize = "off";
 	if(subnetIP_support_IPv6)
 		subnet_input_obj.maxLength = "39";
 	else {
+		subnet_input_obj.placeholder = "(ex.10.10.10.0/24)";
 		subnet_input_obj.maxLength = "18";
 		subnet_input_obj.onkeypress = function() {
 			return validator.isIPAddrPlusNetmask(this,event);
@@ -619,13 +657,11 @@ function initialIPSecProfile() {
 	clear_subnet_input("local");
 	document.getElementById("td_net_local_private_subnet").appendChild(gen_subnet_input("local", 1, ""));
 	document.getElementById("td_net_local_private_subnet").appendChild(gen_subnet_add("local"));
-	document.getElementById("td_net_local_private_subnet").appendChild(gen_subnet_hint());
 	document.form.ipsec_local_port.value = "0";
 
 	clear_subnet_input("remote");
 	document.getElementById("td_net_remote_private_subnet").appendChild(gen_subnet_input("remote", 1, ""));
 	document.getElementById("td_net_remote_private_subnet").appendChild(gen_subnet_add("remote"));
-	document.getElementById("td_net_remote_private_subnet").appendChild(gen_subnet_hint());
 
 	document.form.ipsec_remote_port.value = "0";
 	settingRadioItemCheck(document.form.ipsec_virtual_ip, "1");
@@ -716,7 +752,6 @@ function UpdateIPSecProfile(array, array_ext) {
 				document.getElementById("td_net_local_private_subnet").appendChild(gen_subnet_input("local", local_subnet_idx, local_subnet[i]));
 				if(local_subnet_idx == 1) {
 					document.getElementById("td_net_local_private_subnet").appendChild(gen_subnet_add("local"));
-					document.getElementById("td_net_local_private_subnet").appendChild(gen_subnet_hint());
 				}
 				local_subnet_idx++;
 			}
@@ -736,7 +771,6 @@ function UpdateIPSecProfile(array, array_ext) {
 				document.getElementById("td_net_remote_private_subnet").appendChild(gen_subnet_input("remote", remote_subnet_idx, remote_subnet[i]));
 				if(remote_subnet_idx == 1) {
 					document.getElementById("td_net_remote_private_subnet").appendChild(gen_subnet_add("remote"));
-					document.getElementById("td_net_remote_private_subnet").appendChild(gen_subnet_hint());
 				}
 				remote_subnet_idx++;
 			}
@@ -1068,7 +1102,10 @@ function validForm() {
 
 	if(document.form.ipsec_vpn_type.value != "4") {
 		var valid_subnet = function(_type) {
-			var existSubnetItem = document.getElementById("tr_net_" + _type + "_private_subnet").getElementsByClassName("input_25_table").length;
+			var existSubnetItem = 1;//ike v1 only single subnet
+			var ike_version = getRadioItemCheck(document.form.ipsec_ike);
+			if(ike_version == "2")
+				existSubnetItem = document.getElementById("tr_net_" + _type + "_private_subnet").getElementsByClassName("input_25_table").length;
 			var existSubnetItemList = "";
 			var existSubnetObj = "";
 			var is_ipv4 = false;
@@ -1285,7 +1322,10 @@ function save_ipsec_profile_panel() {
 		var accessible_networks = "null";
 		var get_subnet_list = function(_type) {
 			var subnet_list = "";
-			var existSubnetItem = document.getElementById("tr_net_" + _type + "_private_subnet").getElementsByClassName("input_25_table").length;
+			var existSubnetItem = 1;//ike v1 only single subnet
+			var ike_version = getRadioItemCheck(document.form.ipsec_ike);
+			if(ike_version == "2")
+				existSubnetItem = document.getElementById("tr_net_" + _type + "_private_subnet").getElementsByClassName("input_25_table").length;
 			for(var i = 1 ; i <= existSubnetItem; i += 1) {
 				subnet_list += "<" + document.getElementById("ipsec_" + _type + "_subnet_" + i).value;
 			}
@@ -1585,19 +1625,24 @@ function switchMode(mode) {
 	while(document.form.ipsec_local_public_interface.options.length > 0){
 		document.form.ipsec_local_public_interface.remove(0);
 	}
+	var wans_cap = '<% nvram_get("wans_cap"); %>'.split(" ");
 	var wan_type_list = [];
-	var option = ["wan", "<#dualwan_primary#>"];
-	wan_type_list.push(option);
-	if(dualWAN_support) {
-		option = ["wan2", "<#dualwan_secondary#>"];
-		wan_type_list.push(option);
+	for(var i = 0; i < wans_cap.length; i += 1) {
+		if(wans_cap[i] == "wan" || wans_cap[i] == "wan2" || wans_cap[i] == "usb") {
+			var option_value = "";
+			var option_text = "";
+			option_value = wans_cap[i];
+			option_text = wans_cap[i].toUpperCase();
+			var option = [option_value, option_text];
+			wan_type_list.push(option);
+		}
 	}
-
+	var selectobject = document.form.ipsec_local_public_interface;
 	for(var i = 0; i < wan_type_list.length; i += 1) {
 		var option = document.createElement("option");
 		option.value = wan_type_list[i][0];
 		option.text = wan_type_list[i][1];
-		document.form.ipsec_local_public_interface.add(option);
+		selectobject.add(option);
 	}
 
 	showhide("tr_general_dns1", 0);
@@ -1724,6 +1769,8 @@ function changeIKEVersion() {
 			}
 			break;
 	}
+	controlSubnetStatus(ike_version, "local");
+	controlSubnetStatus(ike_version, "remote");
 }
 function changeXAUTH() {
 	var clickItem = getRadioItemCheck(document.form.ipsec_xauth);
@@ -1773,10 +1820,13 @@ function add_subnet_item(obj, _type) {
 		var divObj = document.createElement("input");
 		divObj.type = "text";
 		divObj.className = "input_25_table";
+		divObj.autocomplete = "off";
+		divObj.autocapitalize = "off";
 		divObj.id = "ipsec_" + _type + "_subnet_" + (existSubnetItem + 1);
 		if(subnetIP_support_IPv6)
 			divObj.maxLength = "39";
 		else {
+			divObj.placeholder = "(ex.10.10.10.0/24)";
 			divObj.maxLength = "18";
 			divObj.onkeypress = function() {
 				return validator.isIPAddrPlusNetmask(this,event);
@@ -2029,7 +2079,13 @@ function getRadioItemCheck(obj) {
 }
 function applyRule() {
 	document.general_form.force_change.value++;
+	document.general_form.ipsec_hw_crypto_enable.value = getRadioItemCheck(document.form.ipsec_hw_crypto_enable);
 	document.general_form.ipsec_server_enable.value = ipsec_server_enable;
+	if(ipsec_hw_crypto_enable_ori != document.general_form.ipsec_hw_crypto_enable.value) {
+		var reboot_needed_time = eval("<% get_default_reboot_time(); %>");
+		document.general_form.action_wait.value = reboot_needed_time;
+		document.general_form.action_script.value = "reboot";
+	}
 	document.general_form.submit();
 }
 function viewLog() {
@@ -2081,7 +2137,13 @@ function ipsecShowAndHide(server_enable) {
 		ipsec_server_enable = 0;
 	}
 
+	document.general_form.ipsec_hw_crypto_enable.value = getRadioItemCheck(document.form.ipsec_hw_crypto_enable);
 	document.general_form.ipsec_server_enable.value = ipsec_server_enable;
+	if(ipsec_hw_crypto_enable_ori != document.general_form.ipsec_hw_crypto_enable.value) {
+		var reboot_needed_time = eval("<% get_default_reboot_time(); %>");
+		document.general_form.action_wait.value = reboot_needed_time;
+		document.general_form.action_script.value = "reboot";
+	}
 	showLoading();
 	document.general_form.submit();
 }
@@ -2090,6 +2152,29 @@ function changeExchangeMode() {
 	$("#exchange_mode_hint").css("display", "none");
 	if(clickItem == "1") {
 		$("#exchange_mode_hint").css("display", "");
+	}
+}
+function changeHardwareCrypto() {
+	var clickItem = getRadioItemCheck(document.form.ipsec_hw_crypto_enable);
+	if(clickItem == "0") {
+		var hintMsg = "Disable hardware crypto offloading will degrade VPN encryption performance, are you sure you want to change the setting?";
+		if(!confirm(hintMsg))
+			settingRadioItemCheck(document.form.ipsec_hw_crypto_enable, "1");
+	}
+}
+function controlSubnetStatus(_ikeVersion, _type) {
+	switch(_ikeVersion) {
+		case "1" :
+			$("#td_net_" + _type +"_private_subnet").children(".add_btn").css("display", "none");
+			$("#td_net_" + _type +"_private_subnet").children(".input_25_table").css("display", "none");
+			$("#td_net_" + _type +"_private_subnet").children(".input_25_table").eq(0).css("display", "");
+			$("#td_net_" + _type +"_private_subnet").children(".remove_btn").css("display", "none");
+			break;
+		case "2" :
+			$("#td_net_" + _type +"_private_subnet").children(".add_btn").css("display", "");
+			$("#td_net_" + _type +"_private_subnet").children(".input_25_table").css("display", "");
+			$("#td_net_" + _type +"_private_subnet").children(".remove_btn").css("display", "");
+			break;
 	}
 }
 </script>
@@ -2108,6 +2193,7 @@ function changeExchangeMode() {
 	<input type="hidden" name="action_wait" value="30">
 	<input type="hidden" name="action_script" value="ipsec_set">
 	<input type="hidden" name="ipsec_server_enable" value="<% nvram_get("ipsec_server_enable"); %>">
+	<input type="hidden" name="ipsec_hw_crypto_enable" value="<% nvram_get("ipsec_hw_crypto_enable"); %>">
 	<input type="hidden" name="force_change" value="<% nvram_get("force_change"); %>">
 </form>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
@@ -2179,7 +2265,7 @@ function changeExchangeMode() {
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#BOP_isp_heart_item#> - IPSec VPN<!--untranslated--></div>
 									<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin: 10px 0 10px 5px" class="splitLine"></div>
 									<div class="formfontdesc"></div>
 
 									<table id="ipsec_general_setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -2209,12 +2295,24 @@ function changeExchangeMode() {
 											</script>
 											</td>
 										</tr>
+										<tr id="tr_general_hw_crypto">
+											<th><#vpn_ipsec_hw_crypto_offloading#></th>
+											<td>
+												<label><input type="radio" name="ipsec_hw_crypto_enable" class="input" value="1" <% nvram_match("ipsec_hw_crypto_enable", "1", "checked"); %> onchange="changeHardwareCrypto();"><#btn_Enabled#></label>
+												<label><input type="radio" name="ipsec_hw_crypto_enable" class="input" value="0" <% nvram_match("ipsec_hw_crypto_enable", "0", "checked"); %> onchange="changeHardwareCrypto();"><#btn_Disabled#></label>
+												<div>
+													<span>1. <#vpn_ipsec_hw_crypto_des1#></span>
+													<br>
+													<span>2. <#vpn_ipsec_hw_crypto_des2#></span>
+												</div>
+											</td>
+										</tr>
 										<tr id="tr_general_ike_isakmp">
-											<th>IKE / ISAKMP Port<!--untranslated--></th>
+											<th><#vpn_ipsec_IKE_ISAKMP_Port#></th>
 											<td>500</td>
 										</tr>
 										<tr id="tr_general_ike_isakmp_nat">
-											<th>IKE / ISAKMP NAT-T Port<!--untranslated--></th>
+											<th><#vpn_ipsec_IKE_ISAKMP_NAT_Port#></th>
 											<td>4500</td>
 										</tr>										
 										<tr id="tr_general_log">
@@ -2300,7 +2398,7 @@ function changeExchangeMode() {
 		<tr>
 			<th><#vpn_ipsec_VPN_Profile_Name#></th>
 			<td>
-				<input type="text" class="input_25_table" name="ipsec_profilename">
+				<input type="text" class="input_25_table" name="ipsec_profilename" autocomplete="off" autocorrect="off" autocapitalize="off">
 			</td>
 		</tr>
 		<tr id="tr_remote_gateway_method">
@@ -2313,7 +2411,7 @@ function changeExchangeMode() {
 		<tr id="tr_remote_gateway">
 			<th><#vpn_ipsec_Remote_Gateway#></th>
 			<td>
-				<input type="text" class="input_25_table" name="ipsec_remote_gateway">
+				<input type="text" class="input_25_table" name="ipsec_remote_gateway" autocomplete="off" autocorrect="off" autocapitalize="off">
 			</td>
 		</tr>
 		<tr>
@@ -2334,7 +2432,7 @@ function changeExchangeMode() {
 		<tr id="tr_presharedKey">
 			<th><#vpn_ipsec_PreShared_Key#></th>
 			<td>
-				<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>">
+				<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>" autocomplete="off" autocorrect="off" autocapitalize="off">
 			</td>
 		</tr>
 		<tr id="tr_importCA">
@@ -2355,14 +2453,14 @@ function changeExchangeMode() {
 		<tr id="tr_adv_local_id">
 			<th><#vpn_ipsec_Local_ID#></th>
 			<td>
-				<input type="text" class="input_25_table" name="ipsec_local_id">
+				<input type="text" class="input_25_table" name="ipsec_local_id" placeholder="<#IPConnection_ExternalIPAddress_itemname#>、FQDN、<#AiProtection_WebProtector_EMail#> or DN" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0"><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr id="tr_adv_remote_id">
 			<th><#vpn_ipsec_Remote_ID#></th>
 			<td>
-				<input type="text" class="input_25_table" name="ipsec_remote_id">
+				<input type="text" class="input_25_table" name="ipsec_remote_id" placeholder="<#IPConnection_ExternalIPAddress_itemname#>、FQDN、<#AiProtection_WebProtector_EMail#> or DN" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0"><#feedback_optional#></span>
 			</td>
 		</tr>
@@ -2384,7 +2482,7 @@ function changeExchangeMode() {
 		<tr id="tr_net_local_port">
 			<th><#vpn_ipsec_Local_Port#></th>
 			<td>
-				<input type="text" class="input_6_table" name="ipsec_local_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)">
+				<input type="text" class="input_6_table" name="ipsec_local_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0">(0-65535)</span>
 			</td>
 		</tr>
@@ -2395,7 +2493,7 @@ function changeExchangeMode() {
 		<tr id="tr_net_remote_port">
 			<th><#vpn_ipsec_Remote_Port#></th>
 			<td>
-				<input type="text" class="input_6_table" name="ipsec_remote_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)">
+				<input type="text" class="input_6_table" name="ipsec_remote_port" maxlength="5" value="0" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0">(0-65535)</span>
 			</td>
 		</tr>
@@ -2425,7 +2523,7 @@ function changeExchangeMode() {
 		<tr id="tr_net_virtual_subnet">
 			<th><#vpn_ipsec_Virtual_IP#></th>
 			<td>
-				<input type="text" class="input_25_table" name="ipsec_virtual_subnet" maxlength="18" onKeyPress="return validator.isIPAddrPlusNetmask(this,event)" autocorrect="off" autocapitalize="off">
+				<input type="text" class="input_25_table" name="ipsec_virtual_subnet" maxlength="18" onKeyPress="return validator.isIPAddrPlusNetmask(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0"> (ex.10.10.10.0/24)</span>
 			</td>
 		</tr>
@@ -2440,28 +2538,28 @@ function changeExchangeMode() {
 		<tr id="tr_general_dns1">
 			<th><#IPConnection_x_DNSServer1_itemname#></th>
 			<td>
-				<input type="text" maxlength="15" class="input_15_table" name="ipsec_dns1"  onkeypress="return validator.isIPAddr(this, event)" >
+				<input type="text" maxlength="15" class="input_15_table" name="ipsec_dns1" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0"><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr id="tr_general_dns2">
 			<th><#IPConnection_x_DNSServer2_itemname#></th>
 			<td>
-				<input type="text" maxlength="15" class="input_15_table" name="ipsec_dns2"  onkeypress="return validator.isIPAddr(this, event)" >
+				<input type="text" maxlength="15" class="input_15_table" name="ipsec_dns2" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0"><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr id="tr_general_wins1">
 			<th><#IPConnection_x_WINSServer1_itemname#></th>
 			<td>
-				<input type="text" maxlength="15" class="input_15_table" name="ipsec_wins1"  onkeypress="return validator.isIPAddr(this, event)" >
+				<input type="text" maxlength="15" class="input_15_table" name="ipsec_wins1" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0"><#feedback_optional#></span>
 			</td>
 		</tr>
 		<tr id="tr_general_wins2">
 			<th><#IPConnection_x_WINSServer2_itemname#></th>
 			<td>
-				<input type="text" maxlength="15" class="input_15_table" name="ipsec_wins2"  onkeypress="return validator.isIPAddr(this, event)" >
+				<input type="text" maxlength="15" class="input_15_table" name="ipsec_wins2" onkeypress="return validator.isIPAddr(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				<span style="color:#FC0"><#feedback_optional#></span>
 			</td>
 		</tr>
@@ -2509,7 +2607,7 @@ function changeExchangeMode() {
 				</td>
 			</tr>
 			<tr id="tr_adv_dh_group">
-				<th>Diffile-Hellman Groups<!--untranslated--></th>
+				<th><#vpn_ipsec_dh_group#></th>
 				<td>
 					<label><input type="checkbox" name="ipsec_dh_group_p1" value="1">1</label>
 					<label><input type="checkbox" name="ipsec_dh_group_p1" value="2">2</label>
@@ -2532,7 +2630,7 @@ function changeExchangeMode() {
 			<tr id="tr_adv_keylife_time_p1">
 				<th><#vpn_ipsec_IKE_Key_Lifetime#></th>
 				<td>
-					<input type="text" class="input_6_table" name="ipsec_keylife_p1" maxlength="6" value="86400" onKeyPress="return validator.isNumber(this,event)">
+					<input type="text" class="input_6_table" name="ipsec_keylife_p1" maxlength="6" value="86400" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 					<span style="color:#FC0">(120~172800) <#Second#></span>
 				</td>
 			</tr>
@@ -2547,13 +2645,13 @@ function changeExchangeMode() {
 			<tr id="tr_adv_nat_xauth_account">
 				<th id="th_xauth_account_title"><#vpn_ipsec_XAUTH#> <#AiDisk_Account#></th>
 				<td>
-					<input type="text" class="input_25_table" name="ipsec_xauth_account">
+					<input type="text" class="input_25_table" name="ipsec_xauth_account" autocomplete="off" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
 			<tr id="tr_adv_nat_xauth_password">
 				<th id="th_xauth_password_title"><#vpn_ipsec_XAUTH#> <#PPPConnection_Password_itemname#></th>
 				<td>
-					<input type="text" class="input_25_table" name="ipsec_xauth_password">
+					<input type="text" class="input_25_table" name="ipsec_xauth_password" autocomplete="off" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
 			<tr id="tr_adv_nat_xauth_server_type">
@@ -2575,15 +2673,15 @@ function changeExchangeMode() {
 				</td>
 			</tr>
 			<tr id="tr_adv_ike_isakmp" style="display:none;">
-				<th>IKE / ISAKMP Port<!--untranslated--></th>
+				<th><#vpn_ipsec_IKE_ISAKMP_Port#></th>
 				<td>
-					<input type="text" class="input_6_table" name="ipsec_ike_isakmp" maxlength="3" value="500">
+					<input type="text" class="input_6_table" name="ipsec_ike_isakmp" maxlength="3" value="500" autocomplete="off" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
 			<tr id="tr_adv_ike_isakmp_nat" style="display:none;">
-				<th>IKE / ISAKMP NAT-T Port<!--untranslated--></th>
+				<th><#vpn_ipsec_IKE_ISAKMP_NAT_Port#></th>
 				<td>
-					<input type="text" class="input_6_table" name="ipsec_ike_isakmp_nat" maxlength="4" value="4500">
+					<input type="text" class="input_6_table" name="ipsec_ike_isakmp_nat" maxlength="4" value="4500" autocomplete="off" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
 			<tr id="tr_adv_dead_peer_detection">
@@ -2602,7 +2700,7 @@ function changeExchangeMode() {
 			<tr id="tr_adv_dpd_interval">
 				<th><#vpn_ipsec_DPD_Checking_Interval#></th>
 				<td>
-					<input type="text" class="input_3_table" name="ipsec_dpd" maxlength="3" value="10" onKeyPress="return validator.isNumber(this,event)">
+					<input type="text" class="input_3_table" name="ipsec_dpd" maxlength="3" value="10" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 					<span style="color:#FC0">(10~900) <#Second#></span>
 				</td>
 			</tr>
@@ -2636,14 +2734,14 @@ function changeExchangeMode() {
 			<tr id="tr_adv_keylife_time_p2">
 				<th><#vpn_ipsec_Key_Lifetime#></th>
 				<td>
-					<input type="text" class="input_6_table" name="ipsec_keylife_p2" maxlength="6" value="3600" onKeyPress="return validator.isNumber(this,event)">
+					<input type="text" class="input_6_table" name="ipsec_keylife_p2" maxlength="6" value="3600" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 					<span style="color:#FC0">(120~172800) <#Second#></span>
 				</td>
 			</tr>
 			<tr id="tr_adv_keyingtries_p2">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(33,1);"><#vpn_ipsec_Key_Retries#></a></th>
 				<td>
-					<input type="text" class="input_6_table" name="ipsec_keyingtries" maxlength="2" value="3" onKeyPress="return validator.isNumber(this,event)">
+					<input type="text" class="input_6_table" name="ipsec_keyingtries" maxlength="2" value="3" onKeyPress="return validator.isNumber(this,event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 				</td>
 			</tr>
 		</table>
@@ -2654,7 +2752,7 @@ function changeExchangeMode() {
 	<table id="tbAccountList" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:15px;">
 		<thead>
 		<tr>
-			<td colspan="3"><#Username_Pwd#>&nbsp;(<#List_limit#>&nbsp;8)</td>
+			<td colspan="3"><#Username_Pwd#>&nbsp;(<#List_limit#>&nbsp;16)</td>
 		</tr>
 		</thead>
 		<tr>
@@ -2664,13 +2762,13 @@ function changeExchangeMode() {
 		</tr>
 		<tr>
 			<td width="45%">
-				<input type="text" class="input_25_table" maxlength="32" name="ipsec_client_list_username" onKeyPress="return validator.isString(this, event)">
+				<input type="text" class="input_25_table" maxlength="32" name="ipsec_client_list_username" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 			</td>
 			<td width="45%">
-				<input type="text" class="input_25_table" maxlength="32" name="ipsec_client_list_password" onKeyPress="return validator.isString(this, event)">
+				<input type="text" class="input_25_table" maxlength="32" name="ipsec_client_list_password" onKeyPress="return validator.isString(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
 			</td>
 			<td width="10%">
-				<div><input type="button" class="add_btn" onClick="addRow_Group(8);" value=""></div>
+				<div><input type="button" class="add_btn" onClick="addRow_Group(16);" value=""></div>
 			</td>
 		</tr>
 	</table>

@@ -140,7 +140,7 @@ function addRow(obj, upper){
 		obj.select();
 		return false;
 	}
-	else if(!check_macaddr(obj, check_hwaddr_flag(obj))) {
+	else if(!check_macaddr(obj, check_hwaddr_flag(obj, 'inner'))) {
 		obj.focus();
 		obj.select();
 		return false;
@@ -536,7 +536,7 @@ function showWlHint(){
 											</tr>
 										</thead>
 										<tr>
-											<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</th> 
+											<th width="80%"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>
 											<th width="20%"><#list_add_delete#></th>
 										</tr>
 										<tr>
@@ -546,7 +546,7 @@ function showWlHint(){
 												<div id="WL_MAC_List_Block" class="clientlist_dropdown" style="margin-left:167px;"></div>
 											</td>
 											<td width="20%">
-												<input type="button" class="add_btn" onClick="addRow(document.form.wlX_rast_static_client, 3);" value="">
+												<input type="button" class="add_btn" onClick="addRow(document.form.wlX_rast_static_client, 64);" value="">
 											</td>
 										</tr>
 									</table>

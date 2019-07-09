@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=Valitse mikä vaihtoehto kuvaa parhaiten DSL-laitteesi suorituskykyä
-feedback_country=Maa / alue
+feedback_country=Maa
 feedback_cancel_capturing=Peruuta virheenkorjauksen sieppaus
 feedback_current_capturing=Diagnostiikka-virheenkorjauslokin sieppaus käynnissä
 feedback_capturing_duration=Diagnostiikan virheenkorjauslokin sieppauksen kesto
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Kirjaudu sisään</a> IFTTT-tilillesi.
 IFTTT_start0=Käynnistä automaatioelämä ASUS-reitittimellä ja IFTTT:llä!
 IFTTT_start1=Näin pääset alkuun:
 in=kohdassa
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Bändi
 Interface_target=Target Bändi
 Internet=Internet

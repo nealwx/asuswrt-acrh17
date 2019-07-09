@@ -248,17 +248,17 @@ function check_weakness(){
 	if(danger_count != 0){
 		$("#router_scan_count").html(danger_count);
 		$("#router_scan_count").css("backgroundColor", "#ED1C24");
-		$("#router_scan_state").html("Danger");
+		$("#router_scan_state").html("<#AiProtection_scan_rDanger#>");
 	}
 	else if(risk_count != 0){
 		$("#router_scan_count").html(risk_count);
 		$("#router_scan_count").css("backgroundColor", "#EF9800");
-		$("#router_scan_state").html("Risk");
+		$("#router_scan_state").html("<#AiProtection_scan_rRisk#>");
 	}
 	else if(safe_count != 0){
 		$("#router_scan_count").html(safe_count);
 		$("#router_scan_count").css("backgroundColor", "#24A628");
-		$("#router_scan_state").html("Safe");
+		$("#router_scan_state").html("<#AiProtection_scan_rSafe#>");
 	}
 }
 
@@ -968,7 +968,7 @@ function shadeHandle(flag){
 							<input class="button_gen" type="button" onclick="close_weakness_status();" value="<#CTL_close#>">
 						</td>
 						<td>
-							<input id="all_security_btn" class="button_gen_long" type="button" onclick="enable_whole_security();" value="<#CTL_secure#>">
+							<input id="all_security_btn" class="button_gen" type="button" onclick="enable_whole_security();" value="<#CTL_secure#>">
 						</td>
 					</tr>
 				</table>
@@ -1040,7 +1040,7 @@ function shadeHandle(flag){
 			<td>
 				<div style="text-align:center;margin-top:20px;">
 					<input class="button_gen" type="button" onclick="close_alert_preference();" value="<#CTL_close#>">
-					<input class="button_gen_long" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
+					<input class="button_gen" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
 				</div>
 			</td>
 		</tr>
@@ -1112,7 +1112,7 @@ function shadeHandle(flag){
 											</tr>
 										</table>
 									</div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin: 10px 0 10px 5px" class="splitLine"></div>
 									<div id="PC_desc">
 										<table width="700px" style="margin-left:25px;">
 											<tr>
@@ -1154,7 +1154,7 @@ function shadeHandle(flag){
 													<div style="font-style: italic;font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_scan_desc#></div>
 												</td>
 												 <td width="6px">
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div>
@@ -1162,7 +1162,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td>
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;">
 													<div id="router_scan_status" style="text-align:center;">
@@ -1180,7 +1180,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												 <td width="6px">
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative;">
@@ -1203,14 +1203,14 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td >
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_MaliciousSitesBlocking.asp'">
 														<div id="mals_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
 														<div style="text-align:center;">
 															<div id="mali_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
-															<div style="font-size: 16px;">Hits</div>
+															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="mali_time" style="color:#A1A7A8"></div>
 														</div>
 													</div>
@@ -1227,7 +1227,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												 <td width="6px">
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative">
@@ -1250,14 +1250,14 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td >
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_IntrusionPreventionSystem.asp'">
 														<div id="vp_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
 														<div style="text-align:center;">
 															<div id="vp_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
-															<div style="font-size: 16px;">Hits</div>
+															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="vp_time" style="color:#A1A7A8"></div>
 														</div>
 													</div>
@@ -1271,7 +1271,7 @@ function shadeHandle(flag){
 													<div style="font-style: italic;font-size: 14px;color:#FC0;height:auto;;padding-top:5px;"><#AiProtection_detection_block_desc#></div>
 												</td>
 												 <td>
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative">
@@ -1294,14 +1294,14 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td>
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
 														<div id="infected_count_shade" style="position:absolute;width:140px;height:115px;background-color:#505050;opacity:0.6;z-index:5;margin-top:-14px;display:none"></div>
 														<div style="text-align:center;">
 															<div id="infected_count" style="width:45px;height:45px;margin:0 auto;line-height: 45px;font-size:38px;color:#FC0;text-shadow:1px 1px 0px black"></div>
-															<div style="font-size: 16px;">Hits</div>
+															<div style="font-size: 16px;"><#AiProtection_scan_rHits#></div>
 															<div id="infected_time" style="color:#A1A7A8"></div>
 														</div>
 													</div>
@@ -1311,7 +1311,7 @@ function shadeHandle(flag){
 									</div>
 									<div style=";margin:20px 0;text-align:right">
 										<div style="display:inline-block">
-											<input class="button_gen_long" type="button" onclick="show_alert_preference();" value="<#AiProtection_alert_pref#>">
+											<input class="button_gen" type="button" onclick="show_alert_preference();" value="<#AiProtection_alert_pref#>">
 										</div>
 									</div>
 									<div style="width:135px;height:55px;margin: -10px 0 0 600px;background-image:url('images/New_ui/tm_logo_power.png');"></div>

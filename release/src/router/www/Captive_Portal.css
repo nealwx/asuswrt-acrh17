@@ -328,6 +328,11 @@
 	border-bottom-width: 1px;
 	padding-bottom: 5px;
 }
+.splash_template_terms_service_hyperlink {
+	color: #4A90E2;
+	text-decoration: underline;
+	cursor:pointer;
+}
 .splash_template_continue {
 	background-color: #4A90E2;
 	border-radius: 4px;
@@ -351,7 +356,8 @@
 	right: -15px;
 }
 .wl_input_disabled {
-	background-image: url("/images/New_ui/inputbg_disable.png");
+	background: #C3C3C3;
+	border: 1px solid #FFF;
 }
 .splash_image_size_content {
 	margin-right: 50px;

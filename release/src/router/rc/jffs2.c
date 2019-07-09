@@ -12,6 +12,9 @@
 #include <sys/statfs.h>
 #include <sys/reboot.h>
 #include <errno.h>
+#if defined(RTCONFIG_PSISTLOG) || defined(RTCONFIG_JFFS2LOG)
+#include <limits.h>
+#endif
 #ifndef MNT_DETACH
 #define MNT_DETACH	0x00000002
 #endif
@@ -82,8 +85,6 @@ unsigned int get_root_type(void)
 		case MODEL_RTN11P_B1:
 		case MODEL_RPAC53:
 		case MODEL_RPAC55:
-		case MODEL_RTN19:
-		case MODEL_RTAC59U:
 		case MODEL_MAPAC1750:
 			return 0x73717368;      /* squashfs */
 		case MODEL_GTAC5300:
@@ -175,7 +176,7 @@ void format_mount_2nd_jffs2(void)
 	if (!check_in_rootfs(SECOND_JFFS2_PATH, "2nd_jffs", format))
 		return;
 
-	if (!mtd_unlock(SECOND_JFFS2_PARTITION)) {
+	if (mtd_unlock(SECOND_JFFS2_PARTITION)) {
 		error("unlocking");
 		return;
 	}
@@ -184,7 +185,7 @@ void format_mount_2nd_jffs2(void)
 	sprintf(s, MTD_BLKDEV(%d), part);
 	model = get_model();
 	if (mount(s, SECOND_JFFS2_PATH, JFFS_NAME, MS_NOATIME, "") != 0) {
-		if ((model==MODEL_RTAC56U || model==MODEL_RTAC56S || model==MODEL_RTAC3200 || model==MODEL_RTAC68U || model==MODEL_DSLAC68U || model==MODEL_RTAC87U || model==MODEL_RTAC88U || model==MODEL_RTAC86U || model==MODEL_RTAC3100 || model==MODEL_RTAC5300 || model==MODEL_GTAC5300 || model==MODEL_RTN18U) ^ (!mtd_erase(JFFS2_MTD_NAME))){
+		if (mtd_erase(JFFS2_MTD_NAME)){
 			error("formatting");
 			return;
 		}
@@ -236,7 +237,7 @@ void start_jffs2(void)
 
 	if (nvram_match("jffs2_format", "1")) {
 		nvram_set("jffs2_format", "0");
-		if ((model==MODEL_RTAC56U || model==MODEL_RTAC56S || model==MODEL_RTAC3200 || model==MODEL_RTAC68U || model==MODEL_DSLAC68U || model==MODEL_RTAC87U || model==MODEL_RTAC88U || model==MODEL_RTAC86U || model==MODEL_RTAC3100 || model==MODEL_RTAC5300 || model==MODEL_GTAC5300 || model==MODEL_RTN18U || model==MODEL_RTAC1200G || model==MODEL_RTAC1200GP) ^ (!mtd_erase(JFFS2_MTD_NAME))){
+		if (mtd_erase(JFFS2_MTD_NAME)){
 			error("formatting");
 			return;
 		}
@@ -261,7 +262,7 @@ void start_jffs2(void)
 		return;
 
 	if (nvram_get_int("jffs2_clean_fs")) {
-		if (!mtd_unlock(JFFS2_PARTITION)) {
+		if (mtd_unlock(JFFS2_PARTITION)) {
 			error("unlocking");
 			return;
 		}
@@ -270,7 +271,7 @@ void start_jffs2(void)
 	sprintf(s, MTD_BLKDEV(%d), part);
 
 	if (mount(s, "/jffs", JFFS_NAME, MS_NOATIME, "") != 0) {
-		if ((model==MODEL_RTAC56U || model==MODEL_RTAC56S || model==MODEL_RTAC3200 || model==MODEL_RTAC68U || model==MODEL_DSLAC68U || model==MODEL_RTAC87U || model==MODEL_RTAC88U || model==MODEL_RTAC86U || model==MODEL_RTAC3100 || model==MODEL_RTAC5300 || model==MODEL_GTAC5300 || model==MODEL_RTN18U || model==MODEL_RTAC1200G || model==MODEL_RTAC1200GP) ^ (!mtd_erase(JFFS2_MTD_NAME))){
+		if (mtd_erase(JFFS2_MTD_NAME)){
 			jffs2_fail = 1;
 			error("formatting");
 			return;
@@ -285,6 +286,8 @@ void start_jffs2(void)
 			return;
 		}
 	}
+
+	set_proper_perm();
 
 	if(jffs2_fail == 1) {
 		nvram_set("jffs2_fail", "1");
@@ -344,6 +347,9 @@ void start_jffs2(void)
 #endif
 
 	run_userfile("/jffs", ".asusrouter", "/jffs", 3);
+#ifdef CONFIG_BCMWL5
+	check_asus_jffs();
+#endif
 }
 
 void stop_jffs2(int stop)
@@ -362,10 +368,16 @@ void stop_jffs2(int stop)
 	}
 
 #if defined(RTCONFIG_PSISTLOG) || defined(RTCONFIG_JFFS2LOG)
-	if (!stop && !strncmp(get_syslog_fname(0), "/jffs/", 6)) {
+	char prefix[PATH_MAX], path1[PATH_MAX], path2[PATH_MAX];
+
+	snprintf(prefix, sizeof(prefix), "%s/", nvram_safe_get("log_path"));
+	snprintf(path1, sizeof(path1), "%ssyslog.log", prefix);
+	snprintf(path2, sizeof(path2), "%ssyslog.log-1", prefix);
+
+	if (!stop && !strncmp(get_syslog_fname(0), prefix, strlen(prefix))) {
 		restart_syslogd = 1;
 		stop_syslogd();
-		eval("cp", "/jffs/syslog.log", "/jffs/syslog.log-1", "/tmp");
+		eval("cp", path1, path2, "/tmp");
 	}
 #endif
 

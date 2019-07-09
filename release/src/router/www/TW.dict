@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">登入</a> 您的 IFTTT 帳號。
 IFTTT_start0=使用華碩路由器與 IFTTT 開啟您的自動化生活吧！
 IFTTT_start1=開始：
 in=在
-info_failed=暫時無法取得韌體更新資訊，請稍後再試。
 Interface=頻段
 Interface_target=目標頻段
 Internet=網際網路

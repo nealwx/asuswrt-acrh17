@@ -36,7 +36,7 @@ extern void generate_wl_para(char *ifname, int unit, int subunit);
 extern void reinit_hwnat(int unit);
 #elif defined(RTCONFIG_QCA)
 
-#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X) || defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_SOC_IPQ40XX)
 #define reinit_hwnat(unit) reinit_sfe(unit)
 extern void reinit_sfe(int unit);
 static inline void tweak_wifi_ps(const char *wif) { }
@@ -67,7 +67,7 @@ extern char *wlc_nvname(char *keyword);
 #if defined(RTCONFIG_RALINK)
 extern int getWscStatus(int unit);
 #elif defined(RTCONFIG_QCA) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
-extern char *getWscStatus(int unit);
+extern char *getWscStatus(int unit, char *buf, int buflen);
 #endif
 
 #if defined(RTCONFIG_DSL)
@@ -80,7 +80,6 @@ extern void config_switch_dsl_set_lan(void);
 #if defined(RTCONFIG_BT_CONN)
 extern void gen_rtlbt_fw_config(void);
 #endif
-extern int rtk_check_nvram_partation(void);
 #endif
 
 #ifdef RTCONFIG_BCMFA

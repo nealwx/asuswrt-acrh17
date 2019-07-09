@@ -366,7 +366,7 @@ function overHint(itemNum){
 		if(diag_dblog_enable == "1") {
 			var lineDesc = "";
 			statusmenu = "<div class='StatusHint'>System Diagnostic :</div>"; /* untranslated */
-			lineDesc = "Diagnostic debug log capture in progress.<br>"; /* Untranslated */
+			lineDesc = "<#feedback_current_capturing#><br>";
 			statusmenu += "<span>" + lineDesc + "</span>";
 
 			statusmenu += "<div class='StatusHint'><#btn_Enabled#> :</div>";
@@ -434,7 +434,7 @@ function overHint(itemNum){
                         lineDesc += "Link down";
 
 		if(wan_diag_state == "1" && allUsbStatus.search("storage") >= 0){
-			lineDesc += "<br>Diagnostic debug log capture in progress.<br>";	/* Untranslated */
+			lineDesc += "<br><#feedback_current_capturing#><br>";
 			lineDesc += show_diagTime(boottime_update);
 		}
 					
@@ -1003,7 +1003,7 @@ function openHint(hint_array_id, hint_show_id, flag){
 		var _caption = "";
 
 		if(hint_show_id == 10){ // Feedback System Diagnostic Capture
-			statusmenu = "<span class='StatusClickHint' onclick='cancel_dblog();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Cancel debug capture</span>";
+			statusmenu = "<span class='StatusClickHint' onclick='cancel_dblog();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><#feedback_cancel_capturing#></span>";
 			_caption = "System Diagnostic capture";
 		}
 		else if(hint_show_id == 9){	//2015.07 Viz add for bwdpi : Adaptive QoS mode
@@ -1012,7 +1012,7 @@ function openHint(hint_array_id, hint_show_id, flag){
 			_caption = "<#Adaptive_QoS#>";
 		}
 		else if(hint_show_id == 8){	//2014.10 Viz add for dsl dslx_diag_state
-			statusmenu = "<span class='StatusClickHint' onclick='cancel_diag();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'>Cancel debug capture</span>";
+			statusmenu = "<span class='StatusClickHint' onclick='cancel_diag();' onmouseout='this.className=\"StatusClickHint\"' onmouseover='this.className=\"StatusClickHint_mouseover\"'><#feedback_cancel_capturing#></span>";
 			_caption = "DSL Line Diagnostic capture";
 		}
 		else if(hint_show_id == 7){
@@ -2548,28 +2548,6 @@ function registerHook(fnHookTo, fnRef, hookType, optPm) {
 		}
 
 		return;
-	}
-}
-
-// Register a function that will set runtime variables.
-function registerRunTimeFunction(fn) {
-	if (isFunction(fn)) {
-		if (typeof fn == 'object') {
-			runTime = runTime.concat(fn);
-		} else {
-			runTime[runTime.length++] = fn;
-		}
-	}
-}
-
-// Register a function that will handle command parsing.
-function registerCmdLineFunction(fn){
-	if (isFunction(fn)) {
-		if (typeof fn == 'object') {
-			cmdLine = cmdLine.concat(fn);
-		} else {
-			cmdLine[cmdLine.length++] = fn;
-		}
 	}
 }
 

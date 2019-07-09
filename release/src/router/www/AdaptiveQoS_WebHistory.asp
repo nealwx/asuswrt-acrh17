@@ -360,7 +360,7 @@ function updateWebHistory() {
 								<td bgcolor="#4D595D" colspan="3" valign="top">
 									<div>&nbsp;</div>
 									<div id="content_title" class="formfonttitle"><#menu5_3_2#> - <#Adaptive_History#></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc">
 										<#Adaptive_History_desc#>
 									</div>
@@ -395,8 +395,8 @@ function updateWebHistory() {
 											<table style="width:100%" id="log_table"></table>
 										</div>
 										<div class="apply_gen">
-											<input class="button_gen_long" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
-											<input class="button_gen_long" onClick="getWebHistory(document.form.clientList.value)" type="button" value="<#CTL_refresh#>">
+											<input class="button_gen" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
+											<input class="button_gen" onClick="getWebHistory(document.form.clientList.value)" type="button" value="<#CTL_refresh#>">
 										</div>
 									</div>
 								</td>

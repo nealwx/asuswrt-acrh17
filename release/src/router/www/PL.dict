@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=Wybierz opcję, która najlepiej opisuje wydajność usługi DSL
-feedback_country=Twój kraj / region
+feedback_country=Twój kraj
 feedback_cancel_capturing=Anuluj przechwytywanie dziennika usuwania usterek
 feedback_current_capturing=Trwa przechwytywanie dziennika usuwania usterek podczas diagnostyki
 feedback_capturing_duration=Czas trwania przechwytywania dziennika usuwania usterek podczas diagnostyki
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Zaloguj się</a> do konta IFTTT.
 IFTTT_start0=Rozpocznij zautomatyzowane życie dzięki routerowi ASUS i usłudze IFTTT!
 IFTTT_start1=Rozpoczęcie pracy:
 in=w
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Pasmo
 Interface_target=Pasmo Docelowy
 Internet=Internet status

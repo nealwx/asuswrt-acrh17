@@ -919,7 +919,7 @@ function show_http_clientlist(){
 	}
 	else {
 		var transformNumToText = function(restrict_type) {
-			var bit_text_array = ["", "Web UI", "SSH", "Telnet"];
+			var bit_text_array = ["", "<#System_WebUI#>", "<#System_SSH#>", "<#System_Telnet#>"];
 			var type_text = "";
 			for(var i = 1; restrict_type != 0 && i <= 4; i += 1) {
 				if(restrict_type & 1) {
@@ -1325,8 +1325,8 @@ function control_all_rule_status(obj) {
 		<td bgcolor="#4D595D" valign="top">
 			<div>&nbsp;</div>
 			<div class="formfonttitle"><#menu5_6#> - <#menu5_6_2#></div>
-			<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
-			<div class="formfontdesc"><#Syste_title#></div>
+			<div style="margin: 10px 0 10px 5px;" class="splitLine"></div>
+			<div class="formfontdesc"><#System_title#></div>
 
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 			<thead>
@@ -1535,7 +1535,7 @@ function control_all_rule_status(obj) {
 				</tr>
 
 				<tr id="https_lanport">
-					<th>HTTPS LAN port</th>
+					<th><#System_HTTPS_LAN_Port#></th>
 					<td>
 						<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off">
 						<span id="https_access_page"></span>
@@ -1626,9 +1626,9 @@ function control_all_rule_status(obj) {
 						<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:27px;width:235px;"></div>	
 					</td>
 					<td width="40%">
-						<input type="checkbox" name="access_webui" class="input access_type" value="1">Web UI<!--untranslated-->
-						<input type="checkbox" name="access_ssh" class="input access_type" value="2">SSH<!--untranslated-->
-						<input type="checkbox" name="access_telnet" class="input access_type" value="4">Telnet (Lan only)<!--untranslated-->
+						<input type="checkbox" name="access_webui" class="input access_type" value="1"><#System_WebUI#>
+						<input type="checkbox" name="access_ssh" class="input access_type" value="2"><#System_SSH#>
+						<input type="checkbox" name="access_telnet" class="input access_type" value="4"><#System_Telnet#>
 					</td>
 					<td width="10%">
 						<div id="add_delete" class="add_enable" style="margin:0 auto" onclick="addRow(document.form.http_client_ip_x_0, 4);"></div>

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2017 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,7 +31,9 @@
 #  include <net/if_var.h> 
 #endif
 #include <netinet/in_var.h>
-#include <netinet6/in6_var.h>
+#ifdef HAVE_IPV6
+#  include <netinet6/in6_var.h>
+#endif
 
 #ifndef SA_SIZE
 #define SA_SIZE(sa)                                             \
@@ -42,7 +44,7 @@
 
 #ifdef HAVE_BSD_NETWORK
 static int del_family = 0;
-static union all_addr del_addr;
+static struct all_addr del_addr;
 #endif
 
 #if defined(HAVE_BSD_NETWORK) && !defined(__APPLE__)
@@ -119,7 +121,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
   if (getifaddrs(&head) == -1)
     return 0;
 
-#if defined(HAVE_BSD_NETWORK)
+#if defined(HAVE_BSD_NETWORK) && defined(HAVE_IPV6)
   if (family == AF_INET6)
     fd = socket(PF_INET6, SOCK_DGRAM, 0);
 #endif
@@ -139,7 +141,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      struct in_addr addr, netmask, broadcast;
 	      addr = ((struct sockaddr_in *) addrs->ifa_addr)->sin_addr;
 #ifdef HAVE_BSD_NETWORK
-	      if (del_family == AF_INET && del_addr.addr4.s_addr == addr.s_addr)
+	      if (del_family == AF_INET && del_addr.addr.addr4.s_addr == addr.s_addr)
 		continue;
 #endif
 	      netmask = ((struct sockaddr_in *) addrs->ifa_netmask)->sin_addr;
@@ -150,6 +152,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      if (!((*callback)(addr, iface_index, NULL, netmask, broadcast, parm)))
 		goto err;
 	    }
+#ifdef HAVE_IPV6
 	  else if (family == AF_INET6)
 	    {
 	      struct in6_addr *addr = &((struct sockaddr_in6 *) addrs->ifa_addr)->sin6_addr;
@@ -159,14 +162,14 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 	      u32 valid = 0xffffffff, preferred = 0xffffffff;
 	      int flags = 0;
 #ifdef HAVE_BSD_NETWORK
-	      if (del_family == AF_INET6 && IN6_ARE_ADDR_EQUAL(&del_addr.addr6, addr))
+	      if (del_family == AF_INET6 && IN6_ARE_ADDR_EQUAL(&del_addr.addr.addr6, addr))
 		continue;
 #endif
 #if defined(HAVE_BSD_NETWORK) && !defined(__APPLE__)
 	      struct in6_ifreq ifr6;
 
 	      memset(&ifr6, 0, sizeof(ifr6));
-	      safe_strncpy(ifr6.ifr_name, addrs->ifa_name, sizeof(ifr6.ifr_name));
+	      strncpy(ifr6.ifr_name, addrs->ifa_name, sizeof(ifr6.ifr_name));
 	      
 	      ifr6.ifr_addr = *((struct sockaddr_in6 *) addrs->ifa_addr);
 	      if (fd != -1 && ioctl(fd, SIOCGIFAFLAG_IN6, &ifr6) != -1)
@@ -216,6 +219,7 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 				(int) preferred, (int)valid, parm)))
 		goto err;	      
 	    }
+#endif /* HAVE_IPV6 */
 
 #ifdef HAVE_DHCP6      
 	  else if (family == AF_LINK)
@@ -422,9 +426,11 @@ void route_sock(void)
 	       {
 		 del_family = sa->sa_family;
 		 if (del_family == AF_INET)
-		   del_addr.addr4 = ((struct sockaddr_in *)sa)->sin_addr;
+		   del_addr.addr.addr4 = ((struct sockaddr_in *)sa)->sin_addr;
+#ifdef HAVE_IPV6
 		 else if (del_family == AF_INET6)
-		   del_addr.addr6 = ((struct sockaddr_in6 *)sa)->sin6_addr;
+		   del_addr.addr.addr6 = ((struct sockaddr_in6 *)sa)->sin6_addr;
+#endif
 		 else
 		   del_family = 0;
 	       }

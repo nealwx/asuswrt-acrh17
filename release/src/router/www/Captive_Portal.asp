@@ -23,7 +23,6 @@
 <script type="text/javascript" src="disk_functions.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/Captive_Portal_template.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 var disk_flag = true;
 var splash_image_base64 = "";
@@ -83,12 +82,6 @@ function initial(){
 		captivePortalShowAndHide(0);
 		$("#apply_button").val('<#CTL_Apply_Enable#>');
 	}
-
-	var series = productid.split("-")[0].toUpperCase();
-	if(series == "BRT")
-		httpApi.faqURL("1034971", function(url){document.getElementById("faq").href=url;});
-	else
-		$(".brt_series").remove();
 }
 function captivePortalShowAndHide(_flag) {
 	if(_flag == 1) {
@@ -470,7 +463,7 @@ function gen_splash_page() {
 				code += "<div id='splash_template_content' class='splash_template_content'>";
 					code += "<div class='splash_template_icon'>";
 					code += "</div>";
-					code += "<div class='splash_template_title'>Welcome to";
+					code += "<div class='splash_template_title'><#FreeWiFi_Welcome#>";
 					code += "</div>";
 					code += "<div id='splash_template_brand_name' class='splash_template_brand_name'>Brand Name";
 					code += "</div>";
@@ -480,11 +473,11 @@ function gen_splash_page() {
 							code += "<input type='checkbox' checked disabled>";
 						code += "</div>";
 						code += "<div style='width: 85%;float: left;'>";
-							code += "I have read and agree to <a style='color:#4A90E2;text-decoration:underline;cursor:pointer;'>the Terms of Service</a>";
+							code += "<#FreeWiFi_Agree_Terms_Service#>";
 						code += "</div>";
 						code += "<div style='clear:both;'></div>";
 					code += "</div>";
-					code += "<div class='splash_template_continue'>Continue</div>";
+					code += "<div class='splash_template_continue'><#FreeWiFi_Continue#></div>";
 				code += "</div>";
 			code += "</div>";
 		code += "</div>";
@@ -494,8 +487,8 @@ function gen_splash_page() {
 		code += "<div class='splash_image_hint'><#FreeWiFi_RecommendResolution#>: 1152 x 864 px or above</div>";/*untranslated*/
 		if(isSupportFileReader() && isSupportCanvas()) {
 			code += "<div class='splash_preview'>";
-			code += "<input class='button_gen' onclick='splash_upload_image();' type='button' value='<#btn_Background#>'/>";
-			code += "<input class='button_gen' onclick='preview_splash_page();' type='button' value='<#btn_Preview#>'/>";
+			code += "<input class='button_gen' onclick='splash_upload_image();' type='button' value='<#btn_Background#>' style='margin: 0 5px'/>";
+			code += "<input class='button_gen' onclick='preview_splash_page();' type='button' value='<#btn_Preview#>' style='margin: 0 5px'/>";
 			code += "</div>";
 			code += "<input type='file' name='splash_upload_file' id='splash_upload_file' class='splash_upload_file' onchange='previewSplashImage(this);'/>";
 		}
@@ -563,6 +556,7 @@ function gen_splash_page() {
 
 
 	$('#captive_portal_content').append(code);
+	$('#captive_portal_content').find("#terms_service_hyperlink").addClass("splash_template_terms_service_hyperlink");
 
 	//setting user upload icon attribute start.
 	//1.check rc_support
@@ -1214,6 +1208,8 @@ function save_splash_page_content() {
 			html_landing += "$('#terms_service').html(code);\n";
 
 			html_landing += "control_bt_status();\n";
+			html_landing += "document.getElementById('terms_service_hyperlink').className = 'splash_template_terms_service_hyperlink';\n";
+			html_landing += "document.getElementById('terms_service_hyperlink').onclick = open_term_service;\n";
 		}
 		html_landing += "resize_component();\n";
 		html_landing += "}\n";
@@ -1361,7 +1357,7 @@ function save_splash_page_content() {
 		html_landing += "</g>\n";
 		html_landing += "</g>\n";
 		html_landing += "</svg>\n";
-		html_landing += "<div id='splash_template_title' class='splash_template_title'>Welcome to</div>\n";
+		html_landing += "<div id='splash_template_title' class='splash_template_title'><#FreeWiFi_Welcome#></div>\n";
 		html_landing += "<div id='splash_template_brand_name' class='splash_template_brand_name'>Brand Name</div>\n";
 		if(passcode_status) {
 			html_landing += "<input id='splash_template_passcode' name='splash_template_passcode' class='splash_template_passcode' value='' placeHolder='Please enter Passcode' type='text' maxlength='64' autocorrect='off' autocapitalize='off'>\n";
@@ -1372,12 +1368,12 @@ function save_splash_page_content() {
 				html_landing += "<input type='checkbox' name='cbTermService' id='cbTermService' onclick='control_bt_status();'>\n";
 				html_landing += "</div>\n";
 			html_landing += "<div class='splash_template_terms_service_text'>\n";
-			html_landing += "I have read and agree to <a class='splash_template_terms_service_hyperlink' onclick='open_term_service();'>the Terms of Service</a>\n";
+			html_landing += "<#FreeWiFi_Agree_Terms_Service#>\n";
 			html_landing += "</div>\n";
 			html_landing += "<div style='clear:both;'></div>\n";
 			html_landing += "</div>\n";
 		}
-		html_landing += "<div id='splash_template_continue' class='splash_template_continue' onclick='continue_action();'>Continue</div>\n";
+		html_landing += "<div id='splash_template_continue' class='splash_template_continue' onclick='continue_action();'><#FreeWiFi_Continue#></div>\n";
 		html_landing += "</div>\n";
 		html_landing += "</div>\n";
 		html_landing += "</body></html>\n";
@@ -1885,14 +1881,11 @@ function check_gn_if_status(_subunit, _gn_array) {
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#Guest_Network#> - Free Wi-Fi<!--untranslated--></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="cp_page_intro_icon"></div>
 									<div style='float:left;width:80%;'>
 									<div class="cp_page_intro_txt" style="color:#FC0;"><#FreeWiFi_desc1#></div>
 									<div class="cp_page_intro_txt"><#FreeWiFi_desc2#></div>
-									<div class="cp_page_intro_txt brt_series">
-										<#FAQ_Find#> : <a id="faq" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;" href="" target="_blank">GO</a>
-									</div>
 									<div align="center" class="left" style="float:left;margin-left:20px;margin-top:10px;cursor:pointer;" id="radio_captive_portal_enable"></div>
 									<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden;"></div>
 									<script type="text/javascript">
@@ -1914,7 +1907,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 									</script>
 									</div>
 									<div style="clear:both;"></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div id="captive_portal_content" class="captive_portal_content"></div>
 									<div class='apply_content'>
 										<input id='apply_button' class='button_gen' onclick='apply();' type='button' value=''/>

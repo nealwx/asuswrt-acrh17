@@ -71,25 +71,19 @@ enum
 #define USERAGENT "Asuswrt/networkmap"
 
 
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2))
-#define NMP_CLIENT_LIST_FILENAME	"/jffs/nmp_client_list"
-#else
-#define NMP_CLIENT_LIST_FILENAME	"/tmp/nmp_client_list"
-#endif
-
-#define NCL_LIMIT		14336   //nmp_client_list limit to 14KB to avoid UI glitch
-#define SINGLE_CLIENT_SIZE	109
+#define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
 #define NMP_DEBUG_FILE			"/tmp/NMP_DEBUG"
 #define NMP_DEBUG_MORE_FILE		"/tmp/NMP_DEBUG_MORE"
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
 
 #define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
-#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2))
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
 #else
 #define NMP_CL_JSON_FILE		"/tmp/nmp_cl_json.js"
 #endif
+#define ARP_PATH			"/proc/net/arp"
 
 #define NMP_CONSOLE_DEBUG(fmt, args...) do{ \
 	if(nvram_match("nmp_debug", "1")) { \
@@ -215,5 +209,6 @@ typedef struct
 } ARP_HEADER;
 
 int FindHostname(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
+int FindDeviceMac(unsigned char *pIP, unsigned char *pMac);
 void find_wireless_device(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int offline);
 #endif

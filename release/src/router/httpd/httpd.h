@@ -80,6 +80,53 @@ struct AiMesh_whitelist {
 extern struct AiMesh_whitelist AiMesh_whitelists[];
 #endif
 
+struct stb_port {
+        char *value;
+        char *name;
+};
+
+struct model_stb_port {
+        int model;
+        char *odmpid;
+        struct stb_port port_list[8];
+};
+
+struct iptv_profile {
+        char *profile_name;
+
+        /* for layout*/
+        char *iptv_port;
+        char *voip_port;
+        char *bridge_port;
+        char *iptv_config;
+        char *voip_config;
+
+        /* vlan settings */
+        char *switch_wantag;
+        char *switch_stb_x;
+        char *switch_wan0tagid;
+        char *switch_wan0prio;
+        char *switch_wan1tagid;
+        char *switch_wan1prio;
+        char *switch_wan2tagid;
+        char *switch_wan2prio;
+
+        /* special applications */
+        char *mr_enable_x;
+        char *emf_enable;
+        char *wan_vpndhcp;
+        char *quagga_enable;
+        char *mr_altnet_x;
+        char *ttl_inc_enable;
+};
+
+#ifdef RTCONFIG_ODMPID
+struct REPLACE_ODMPID_S {
+        char *org_name;
+        char *replace_name;
+};
+#endif
+
 #define MIME_EXCEPTION_NOAUTH_ALL 	1<<0
 #define MIME_EXCEPTION_NOAUTH_FIRST	1<<1
 #define MIME_EXCEPTION_NORESETTIME	1<<2
@@ -194,8 +241,8 @@ extern struct language_table language_tables[];
 //2008.10 magic}
 typedef struct kw_s     {
         int len, tlen;                                          // actually / total
-        unsigned char **idx;
-        unsigned char *buf;
+        char **idx;
+        char *buf;
 } kw_t, *pkw_t;
 
 #define INC_ITEM        128
@@ -289,6 +336,7 @@ extern int web_read(void *buffer, int len);
 extern void set_cgi(char *name, char *value);
 
 /* httpd.c */
+extern int json_support;
 extern void start_ssl(void);
 extern char *gethost(void);
 extern void http_logout(unsigned int ip, char *cookies, int fromapp_flag);
@@ -360,7 +408,6 @@ extern void ifttt_log(char* url, char* file);
 extern int alexa_block_internet(int block);
 #endif
 
-extern unsigned int MAX_login;
 extern int cur_login_ip_type;
 extern time_t login_timestamp_tmp; // the timestamp of the current session.
 extern time_t last_login_timestamp; // the timestamp of the current session.
@@ -391,9 +438,6 @@ extern int wave_handle_app_flag(char *name, int wave_app_flag);
 #endif
 #ifdef RTCONFIG_TCODE
 extern int change_location(char *lang);
-#endif
-#ifdef RTCONFIG_WTF_REDEEM
-extern void wtfast_gen_partnercode(char *str, size_t size);
 #endif
 extern void update_wlan_log(int sig);
 #endif /* _httpd_h_ */

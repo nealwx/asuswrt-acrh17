@@ -157,7 +157,7 @@ function redirect(){
 }
 
 function redirect_qis(){
-	parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'<% abs_index_page(); %>';
+	parent.location.href = 'http://'+parent.document.form.lan_ipaddr.value+'/';
 }
 
 function hideLoading(){
@@ -361,7 +361,6 @@ function showWlHint(){
 		wlHintCss += "width: 480px;";
 		wlHintCss += "border: 0;";
 		wlHintCss += "color:#fff;";
-		wlHintCss += "color:#000\9;"; /* IE6 IE7 IE8 */
 		wlHintCss += "font-size:16pt;";
 		wlHintCss += "}.div_table{";
 		wlHintCss += "display:table;";
@@ -473,7 +472,7 @@ function initial(){
 		}
 
 		makeRequest.start('/httpd_check.xml', function(xhr){
-			if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "<% abs_index_page(); %>";
+			if(xhr.responseText.search("Main_Login.asp") !== -1) top.location.href = "/";
 
 			var httpds = xhr.responseXML.getElementsByTagName("httpd");
 			if (httpds !== null && httpds[0] !== null) {
@@ -615,8 +614,10 @@ function initial(){
 	else if(current_page.indexOf("Feedback") != -1){
 		if(action_script == "stop_dblog")
 			setTimeout("top_delay_redirect('"+current_page+"');", restart_time*1000);
-		else
+		else if(dsl_support)
 			setTimeout("parent.redirect();", action_wait*1000);
+		else
+			setTimeout("parent.CheckFBSize();", 15000);
 	}	
 	else if(getflag == "ddnscheck"){
 		setTimeout("parent.go_index_page();", 2000);

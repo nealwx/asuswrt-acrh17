@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=Válassza ki azt a lehetőséget, amely leginkább jellemzi DSL eszköze teljesítményét
-feedback_country=Az Ön országa / régiója
+feedback_country=Az Ön országa
 feedback_cancel_capturing=Hibakeresés rögzítésének visszavonása
 feedback_current_capturing=A diagnosztikai hibakeresési napló rögzítése folyamatban van
 feedback_capturing_duration=Diagnosztikai hibakeresési napló rögzítésének időtartama
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Jelentkezzen be</a> az IFTTT-fiókjába.
 IFTTT_start0=Kezdjen el egy automatizált életet az ASUS Router és az IFTTT segítségével!
 IFTTT_start1=Első lépések:
 in=ebben:
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Sáv
 Interface_target=cél Sáv
 Internet=Internet

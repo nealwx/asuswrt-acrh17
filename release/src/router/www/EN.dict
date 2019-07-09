@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=Choose which option best describes the performance of your DSL service
-feedback_country=Your Country/Region
+feedback_country=Your Country
 feedback_cancel_capturing=Cancel debug capture
 feedback_current_capturing=Diagnostic debug log capture in progress
 feedback_capturing_duration=Diagnostic debug log capture duration
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Sign in</a> to your IFTTT account.
 IFTTT_start0=Start an automation life with ASUS Router and IFTTT!
 IFTTT_start1=Get started :
 in=in
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Band
 Interface_target=Target Band
 Internet=Internet

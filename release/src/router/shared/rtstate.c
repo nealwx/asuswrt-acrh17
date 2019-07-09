@@ -937,6 +937,9 @@ void add_lan_phy(char *phy)
 		return;
 
 	ifnames = nvram_safe_get("lan_ifnames");
+	if(find_word(ifnames, phy) != NULL)
+		return;	/* exist */
+
 	snprintf(phys, sizeof(phys), "%s%s%s", ifnames,
 		(*ifnames && *phy) ? " " : "", phy);
 	nvram_set("lan_ifnames", phys);
@@ -955,6 +958,9 @@ void add_wan_phy(char *phy)
 		return;
 
 	ifnames = nvram_safe_get("wan_ifnames");
+	if(find_word(ifnames, phy) != NULL)
+		return;	/* exist */
+
 	snprintf(phys, sizeof(phys), "%s%s%s", ifnames,
 		(*ifnames && *phy) ? " " : "", phy);
 	nvram_set("wan_ifnames", phys);
@@ -1082,6 +1088,11 @@ char *get_default_ssid(int unit, int subunit)
 	ether_atoe(macp, mac_binary);
 #if defined(RTCONFIG_SSID_AMAPS)
 	sprintf((char *)ssidbase, "%s_%02X_AMAPS", SSID_PREFIX, mac_binary[5]);
+#elif defined(VZWAC1300)
+	if (nvram_match("odmpid", "ASUSMESH-AC1300"))
+		sprintf((char *)ssidbase, "ASUS_%02X_MESH", mac_binary[5]);
+	else
+		sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 #else
 	sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 #endif /* RTCONFIG_SSID_AMAPS */
@@ -1100,6 +1111,11 @@ char *get_default_ssid(int unit, int subunit)
 			sprintf((char *)ssidbase, "Stuff-Fibre_%02X", mac_binary[5]);
 		else
 #endif
+#ifdef RTAC68U
+		if (is_dpsta_repeater())
+			sprintf((char *)ssidbase, "%s_RP_%02X", SSID_PREFIX, mac_binary[5]);
+		else
+#endif
 			sprintf((char *)ssidbase, "%s_%02X", SSID_PREFIX, mac_binary[5]);
 	} else {
 		macp = get_lan_hwaddr();
@@ -1109,12 +1125,15 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 
 	strlcpy(ssid, ssidbase, sizeof(ssid));
-#if defined(RTCONFIG_NEWSSID_REV2) && !defined(RTCONFIG_NEWSSID_REV4)
 #if !defined(RTCONFIG_SINGLE_SSID)	/* including RTCONFIG_NEWSSID_REV2 */
 	switch (unit) {
 	case WL_2G_BAND:
 #if defined(RTCONFIG_NEWSSID_REV2)
-		if (band_num > 1)
+		if ((band_num > 1)
+#ifdef RTAC68U
+			&& !is_dpsta_repeater()
+#endif
+		)
 #endif
 			strlcat(ssid, "_2G", sizeof(ssid));
 		break;
@@ -1138,13 +1157,21 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, "_UNKNOWN", sizeof(ssid));
 	}
 #endif
-#endif
 
 	/* Handle guest network SSID. */
-	if (subunit) {
+	if (subunit
+#ifdef RTAC68U
+		&& !is_dpsta_repeater()
+#endif
+	) {
 #if defined(RTCONFIG_SSID_AMAPS)
 		/* RTCONFIG_SSID_AMAPS use the same guest network SSID rule as SINGLE_SSID */
 		snprintf(ssid, sizeof(ssid), "%s_AMAPS_Guest", SSID_PREFIX);
+#elif defined(VZWAC1300)
+	if (nvram_match("odmpid", "ASUSMESH-AC1300"))
+		snprintf(ssid, sizeof(ssid), "ASUS_MESH_Guest");
+	else
+		strlcat(ssid, post_guest, sizeof(ssid));
 #else
 		strlcat(ssid, post_guest, sizeof(ssid));
 #endif

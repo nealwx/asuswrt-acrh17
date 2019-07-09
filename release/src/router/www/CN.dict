@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">登录</a> 您的 IFTTT 帐号。
 IFTTT_start0=使用华硕路由器与 IFTTT 开启您的自动化生活吧！
 IFTTT_start1=开始：
 in=在
-info_failed=暂时无法获得固件更新信息，请稍后再试。
 Interface=频段
 Interface_target=目标频段
 Internet=互联网

@@ -259,6 +259,11 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "rc_service")==0) {
 		notify_rc(argv[2]);
 	}
+#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_PUSH_EMAIL)
+	else if (strcmp(argv[1], "sendmail")==0) {
+		start_DSLsendmail();
+	}
+#endif
 #ifdef RTCONFIG_BCM_7114
 	else if (strcmp(argv[1], "spect")==0) {
 		start_dfs();
@@ -420,7 +425,7 @@ static int rctest_main(int argc, char *argv[])
 			else stop_psta_monitor();
 		}
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ))
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA))
 		else if (strcmp(argv[1], "obd") == 0) {
 			if (on) start_obd();
 			else stop_obd();
@@ -476,7 +481,7 @@ static int rctest_main(int argc, char *argv[])
 					f_write_string("/proc/sys/net/ipv4/conf/all/force_igmp_version", "2", 0, 0);
 #endif
 
-#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP) || defined(RTACRH26)
+#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP)
 					if (!(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")))
 #endif
 					{
@@ -571,10 +576,10 @@ static int rctest_main(int argc, char *argv[])
 }
 #endif
 
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RTAC59U) || defined(RPAC51) || defined(MAPAC1750)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTAC59U) || defined(RPAC51) || defined(MAPAC1750)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51) || defined(MAPAC1750)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -689,7 +694,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RTAC59U) || defined(RPAC51) || defined(MAPAC1750)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -749,6 +754,9 @@ static const applets_t applets[] = {
 #endif
 #endif
 	{ "watchdog",			watchdog_main			},
+#ifdef RTCONFIG_CONNTRACK
+	{ "pctime",                     pctime_main                     },
+#endif
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
 	{ "watchdog02",			watchdog02_main			},
 #endif  /* ! (RTCONFIG_QCA || RTCONFIG_RALINK) */
@@ -764,8 +772,12 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	{ "psta_monitor",		psta_monitor_main		},
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
 	{ "obd",			obd_main			},
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
+	{ "obd_eth",		obdeth_main				},
+	{ "obd_monitor",	obd_monitor_main			},
 #endif
 #ifdef RTCONFIG_IPERF
 	{ "monitor",			monitor_main			},
@@ -819,7 +831,9 @@ static const applets_t applets[] = {
 	{ "delay_exec",			delay_main			},
 
 	{ "wanduck",			wanduck_main			},
+#ifdef RTCONFIG_CONNDIAG
 	{ "conn_diag",			conn_diag_main			},
+#endif
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 	{ "dualwan",			dualwan_control			},
 #endif
@@ -842,6 +856,10 @@ static const applets_t applets[] = {
 	{ "disk_remove",		diskremove_main			},
 #endif
 	{ "firmware_check",		firmware_check_main		},
+#ifdef RTAC68U
+	{ "firmware_enc_crc",		firmware_enc_crc_main		},
+	{ "fw_check",			fw_check_main			},
+#endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
 #endif
@@ -860,6 +878,9 @@ static const applets_t applets[] = {
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
 	{ "rsasign_sig_check",		rsasign_sig_check_main		},
 #endif
+#ifdef RTCONFIG_AMAS
+	{ "amas_lib",		        amas_lib_main			},
+#endif
 	{ "hour_monitor",		hour_monitor_main		},
 #ifdef RTCONFIG_USB_MODEM
 #ifdef RTCONFIG_INTERNAL_GOBI
@@ -869,8 +890,8 @@ static const applets_t applets[] = {
 #endif
 #endif
 #endif
-#ifdef RTCONFIG_TR069
-	{ "dhcpc_lease",		dhcpc_lease_main		},
+#if defined(RTCONFIG_TR069) || defined(RTCONFIG_AMAS)
+	{ "dhcpc_lease",		dnsmasq_script_main		},
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	{ "roamast",			roam_assistant_main		},
@@ -994,6 +1015,10 @@ int main(int argc, char **argv)
                                 start_cap(1);
                         else if (argv[1] && (!strcmp(argv[1], "restart")))
                                 start_cap(2);
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+                        else if (argv[1] && (!strcmp(argv[1], "renew_bh")))
+                                renew_bh();
+#endif
                         else
                                 printf("error command.\n");
                 }
@@ -1013,6 +1038,10 @@ int main(int argc, char **argv)
                                 start_re(2);
                         else if (argv[1] && (!strcmp(argv[1], "waitimeout")))
                                 start_re(3);
+#if defined(RTCONFIG_HIDDEN_BACKHAUL)
+                        else if (argv[1] && (!strcmp(argv[1], "renew_bh")))
+                                renew_bh();
+#endif
                         else
                                 printf("error command.\n");
                 }
@@ -1061,7 +1090,7 @@ int main(int argc, char **argv)
 			}
                         else if (argv[1] && (!strcmp(argv[1], "3")))
                                 start_eth(3);
-			
+
 			nvram_set("eth_detect_proc","0");
 			nvram_set_int("prelink_pap_status", -1); // trigger LED to change
                 }
@@ -1078,7 +1107,7 @@ int main(int argc, char **argv)
 				nvram_set("eth_detect_proc","0");
 			}
 			nvram_set_int("prelink_pap_status", -1); // trigger LED to change
-		}	
+		}
                 else
         		printf("Error command.\n");
                 return 0;
@@ -1095,7 +1124,7 @@ int main(int argc, char **argv)
                 return 0;
        }
 #endif
-       if(!strcmp(base, "wifimon_check")){	
+       if(!strcmp(base, "wifimon_check")){
 		int default_sec=0;
                 if (nvram_get_int("sw_mode")==SW_MODE_AP && !nvram_match("cfg_master", "1")) {
 			if(argv[1] && strlen(argv[1]))
@@ -1527,12 +1556,15 @@ int main(int argc, char **argv)
 	}
 #endif
 	else if (!strcmp(base, "ATE")) {
+		int ret;
 		if ( argc == 2 || argc == 3 || argc == 4) {
-			asus_ate_command(argv[1], argv[2], argv[3]);
+			ret = asus_ate_command(argv[1], argv[2], argv[3]);
 		}
-		else
+		else {
+			ret = -1;
 			printf("ATE_ERROR\n");
-		return 0;
+		}
+		return ret;
 	}
 #if defined(RTCONFIG_DSL)
 	else if (!strcmp(base, "asustest")) {
@@ -1701,11 +1733,11 @@ int main(int argc, char **argv)
 	else if (!strcmp(base, "amas_bhctrl")) {
 		return amas_bhctrl_main();
 	}
-#endif	
+#endif
 	else if (!strcmp(base, "amas_lanctrl")) {
 		return amas_lanctrl_main();
 	}
-#endif	
+#endif
 #ifdef CONFIG_BCMWL5
 	else if (!strcmp(base, "setup_dnsmq")) {
 		if (argc != 2)

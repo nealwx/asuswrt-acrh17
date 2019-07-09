@@ -17,8 +17,8 @@
 								<li><#ASUS_eula_desc1_2_1#></li>
 							</ol>
 						</li>
-						<li><#ASUS_eula_desc1_3#></li>
-						<li><#ASUS_eula_desc1_4#></li>
+						<li id = "alexa_desc"><#ASUS_eula_desc1_3#></li>
+						<li id = "ifttt_desc"><#ASUS_eula_desc1_4#></li>
 					</ol>
 				</li>
 				<li><#ASUS_eula_desc2#></li>
@@ -45,9 +45,12 @@
 
 		if(alexa_support && !ifttt_support){
 			$("#asus_eula_desc1_1_1").html("<#ASUS_eula_desc1_1_12#>");
+			$("#ifttt_desc").css("display", "none");
 		}
 		else if(!alexa_support && !ifttt_support){
 			$("#asus_eula_desc1_1_1").html("<#ASUS_eula_desc1_1_13#>");
+			$("#alexa_desc").css("display", "none");
+			$("#ifttt_desc").css("display", "none");
 		}
 
 		httpApi.nvramGetAsync({

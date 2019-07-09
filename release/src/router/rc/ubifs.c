@@ -134,7 +134,7 @@ void start_ubifs(void)
 #endif
 
 #ifndef RTCONFIG_NVRAM_FILE
-#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_ALPINE)
+#if defined(RTCONFIG_LANTIQ)
 	if (!wait_action_idle(1))
 		return;
 #else
@@ -162,7 +162,7 @@ void start_ubifs(void)
 		_dprintf("*** ubifs: ubi volume not found\n");
 
 		/* mtd erase on UBIFS_VOL_NAME first */
-		if (!mtd_erase(JFFS2_MTD_NAME)) {
+		if (mtd_erase(JFFS2_MTD_NAME)) {
 			error("formatting");
 			return;
 		}
@@ -257,6 +257,8 @@ void start_ubifs(void)
 			return;
 		}
 	}
+
+	set_proper_perm();
 
 #ifndef RTCONFIG_NVRAM_FILE
 	if (nvram_get_int("ubifs_clean_fs")) {

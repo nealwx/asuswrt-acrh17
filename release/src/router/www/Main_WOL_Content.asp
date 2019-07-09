@@ -55,7 +55,7 @@ function onSubmitCtrl(o, s) {
 		return false;
 	}
 
-	if(check_hwaddr_flag(document.form.destIP) != 0){
+	if(check_hwaddr_flag(document.form.destIP, 'inner') != 0){
 		alert("<#IPConnection_x_illegal_mac#>");
 		document.form.destIP.focus();
 		return false;
@@ -205,7 +205,7 @@ function addRow_Group(upper){
 		document.form.wollist_macAddr.focus();
 		document.form.wollist_macAddr.select();			
 		return false;
-	}else if(!check_macaddr(document.form.wollist_macAddr, check_hwaddr_flag(document.form.wollist_macAddr))){
+	}else if(!check_macaddr(document.form.wollist_macAddr, check_hwaddr_flag(document.form.wollist_macAddr, 'inner'))){
 		document.form.wollist_macAddr.focus();
 		document.form.wollist_macAddr.select();	
 		return false;	
@@ -338,7 +338,7 @@ function applyRule(){
 								<td bgcolor="#4D595D" colspan="3" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#Network_Tools#> - <#NetworkTools_WOL#></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#smart_access2#></div>	
 									<div class="formfontdesc"><#smart_access3#></div>	
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">

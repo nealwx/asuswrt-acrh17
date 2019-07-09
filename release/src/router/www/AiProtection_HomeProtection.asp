@@ -118,10 +118,6 @@
 }
 
 .line_1{
-	background:url('/images/line.png') no-repeat;
-	width:6px;
-	height:102px;
-	background-size:4px 185px;
 }
 
 .shadow{
@@ -135,6 +131,7 @@
 	display: none;
 	border-radius: 10px;
 }
+
 .shadow_m{
 	margin-top: -9px;
 }
@@ -170,10 +167,11 @@ function initial(){
 		$(".AiProtection_02").hide();
 		$(".AiProtection_03").hide();
 		$(".line_1").hide();
-		if(!uiSupport("dpi_vp")){
+		if(!isSupport("dpi_vp")){
 			$("#twoWayIPS_padding").hide();
 			$("#twoWayIPS_field").hide();
 		}
+		$("#tm_logo").css("margin-left", "10px");
 	}
 
 	if(document.form.wrs_protect_enable.value == '1'){
@@ -280,6 +278,12 @@ function applyRule(){
 		}
 	}
 
+	/* when qca_sfe = 1, avoid fast-classifier can't be disabled in run-time */
+	if (based_modelid == "MAP-AC1750") {
+		document.form.action_script.value = "reboot";
+		document.form.action_wait.value = "<% nvram_get("reboot_time"); %>";
+	}
+
 	if(reset_wan_to_fo.change_status)
 		reset_wan_to_fo.change_wan_mode(document.form);
 
@@ -309,18 +313,18 @@ function check_weakness(){
 	if(danger_count != 0){
 		$("#router_scan_count").html(danger_count);
 		$("#router_scan_count").css("backgroundColor", "#ED1C24");
-		$("#router_scan_state").html("Danger");
+		$("#router_scan_state").html("<#AiProtection_scan_rDanger#>");
 	}
 	else if(risk_count != 0){
 		$("#router_scan_count").html(risk_count);
 		$("#router_scan_count").css("backgroundColor", "#EF9800");
-		$("#router_scan_state").html("Risk");
+		$("#router_scan_state").html("<#AiProtection_scan_rRisk#>");
 	}
 	else if(safe_count != 0){
 		$("#all_security_btn").hide();
 		$("#router_scan_count").html(safe_count);
 		$("#router_scan_count").css("backgroundColor", "#24A628");
-		$("#router_scan_state").html("Safe");
+		$("#router_scan_state").html("<#AiProtection_scan_rSafe#>");
 	}
 }
 
@@ -1037,7 +1041,7 @@ function shadeHandle(flag){
 							<input class="button_gen" type="button" onclick="close_weakness_status();" value="<#CTL_close#>">
 						</td>
 						<td>
-							<input id="all_security_btn" class="button_gen_long" type="button" onclick="enable_whole_security();" value="<#CTL_secure#>">
+							<input id="all_security_btn" class="button_gen" type="button" onclick="enable_whole_security();" value="<#CTL_secure#>">
 						</td>
 					</tr>
 				</table>
@@ -1109,7 +1113,7 @@ function shadeHandle(flag){
 			<td>
 				<div style="text-align:center;margin-top:20px;">
 					<input class="button_gen" type="button" onclick="close_alert_preference();" value="<#CTL_close#>">
-					<input class="button_gen_long" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
+					<input class="button_gen" type="button" onclick="apply_alert_preference();" value="<#CTL_apply#>">
 				</div>
 			</td>
 		</tr>
@@ -1181,7 +1185,7 @@ function shadeHandle(flag){
 											</tr>
 										</table>
 									</div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div id="PC_desc">
 										<table width="700px" style="margin-left:25px;">
 											<tr>
@@ -1199,7 +1203,7 @@ function shadeHandle(flag){
 																</div>
 															</td>
 															<td>
-																<div style="width:100px;height:48px;margin-left:-40px;background-image:url('images/New_ui/tm_logo.png');"></div>
+																<div id="tm_logo" style="width:100px;height:48px;margin-left:-40px;background-image:url('images/New_ui/tm_logo.png');"></div>
 															</td>
 														</tr>
 														<tr id="scenario_tr">
@@ -1244,14 +1248,14 @@ function shadeHandle(flag){
 													<div class="AiProtection_01"></div>
 												</td>
 												 <td width="6px">
-													<div class="line_1"></div>
+													<div class="line_vertical line_1"></div>
 												</td>
 												<td style="padding:10px;">
 													<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_scan#></div>
 													<div style="font-style: italic;font-size: 14px;color:#FC0;height:auto;padding-top:5px;"><#AiProtection_scan_desc#></div>
 												</td>
 												 <td width="6px">
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div>
@@ -1259,7 +1263,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td>
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;">
 													<div id="router_scan_status" style="text-align:center;">
@@ -1274,7 +1278,7 @@ function shadeHandle(flag){
 													<div class="AiProtection_02"></div>
 												</td>
 												 <td width="6px">
-													<div class="line_1"></div>
+													<div class="line_vertical line_1"></div>
 												</td>
 												<td style="padding:10px;cursor:pointer;" onclick="location.href='AiProtection_MaliciousSitesBlocking.asp'">
 													<div>
@@ -1283,7 +1287,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												 <td width="6px">
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative;">
@@ -1306,7 +1310,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td >
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_MaliciousSitesBlocking.asp'">
@@ -1326,8 +1330,8 @@ function shadeHandle(flag){
 												<td style="border-radius:10px 0px 0px 10px;">
 													<div class="AiProtection_02"></div>
 												</td>
-												 <td width="6px">
-													<div class="line_1"></div>
+												 <td >
+													<div style="height:135px;" class="line_vertical line_1"></div>
 												</td>
 												<td style="padding:10px;cursor:pointer;" onclick="location.href='AiProtection_IntrusionPreventionSystem.asp'">
 													<div>
@@ -1336,7 +1340,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												 <td width="6px">
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative">
@@ -1359,7 +1363,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td >
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_IntrusionPreventionSystem.asp'">
@@ -1379,14 +1383,14 @@ function shadeHandle(flag){
 													<div class="AiProtection_03"></div>
 												</td>
 												 <td width="6px">
-													<div class="line_1"></div>
+													<div style="height:120px;" class="line_vertical line_1"></div>
 												</td>
 												<td style="padding:10px;cursor:pointer" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
 													<div style="font-size:18px;text-shadow:1px 1px 0px black;"><#AiProtection_detection_blocking#></div>
 													<div style="font-style: italic;font-size: 14px;color:#FC0;height:auto;;padding-top:5px;"><#AiProtection_detection_block_desc#></div>
 												</td>
 												 <td>
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;">
 													<div style="position:relative">
@@ -1409,7 +1413,7 @@ function shadeHandle(flag){
 													</div>
 												</td>
 												<td>
-													<div><img src="/images/line.png"></div>
+													<div class="line_vertical"></div>
 												</td>
 												<td style="width:20%;border-radius:0px 10px 10px 0px;cursor:pointer;">
 													<div style="position:relative" onclick="location.href='AiProtection_InfectedDevicePreventBlock.asp'">
@@ -1426,7 +1430,7 @@ function shadeHandle(flag){
 									</div>
 									<div style=";margin:20px 0;text-align:right">
 										<div style="display:inline-block">
-											<input class="button_gen_long" type="button" onclick="show_alert_preference();" value="<#AiProtection_alert_pref#>">
+											<input class="button_gen" type="button" onclick="show_alert_preference();" value="<#AiProtection_alert_pref#>">
 										</div>
 									</div>
 									<div style="width:135px;height:55px;margin: -10px 0 0 600px;background-image:url('images/New_ui/tm_logo_power.png');"></div>

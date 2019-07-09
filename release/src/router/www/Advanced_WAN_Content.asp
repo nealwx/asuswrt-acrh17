@@ -12,17 +12,6 @@
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <style>
-.apply_gen_wan{
- 	text-align:center;
- 	background-color:#4D595D;
- 	width:99%;
- 	margin-top:10px;
-	border-radius: 0 0 3px 3px;
-	-moz-border-radius-bottomright: 3px;
-	-moz-border-radius-bottomleft: 3px;
-	behavior: url(/PIE.htc);
-	border-radius: 0 0 3px 3px;
-}
 .FormTable{
  	margin-top:10px;	
 }
@@ -38,6 +27,10 @@
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
 var nowWAN = '<% get_parameter("flag"); %>';
+var original_switch_wantag = '<% nvram_get("switch_wantag"); %>';
+var original_switch_stb_x = '<% nvram_get("switch_stb_x"); %>';
+var original_wan_dot1q = '<% nvram_get("wan_dot1q"); %>';
+var original_wan_vid = '<% nvram_get("wan_vid"); %>';
 
 if(dualWAN_support && ( wans_dualwan.search("wan") >= 0 || wans_dualwan.search("lan") >= 0)){
 	var wan_type_name = wans_dualwan.split(" ")[<% nvram_get("wan_unit"); %>].toUpperCase();
@@ -120,6 +113,20 @@ function initial(){
 		showhide("dot1q_setting",1);
 	else
 		showhide("dot1q_setting",0);
+
+	if(productid == "BRT-AC828" || productid == "RT-AD7200"){      //MODELDEP: BRT-AC828, RT-AD7200
+		var wan_type_name = wans_dualwan.split(" ")[<% nvram_get("wan_unit"); %>].toUpperCase();
+		if((original_switch_wantag == "none" && original_switch_stb_x != "0") ||
+		   (original_switch_wantag != "none") || (wan_type_name != "WAN" && wan_type_name != "WAN2")){
+			document.form.wan_dot1q.value = "0";
+			showhide("wan_dot1q_setting",0);
+		}else{
+			showhide("wan_dot1q_setting",1);
+		}
+	}else{
+		document.form.wan_dot1q.value = "0";
+		showhide("wan_dot1q_setting",0);
+	}
 }
 
 function change_notusb_unit(){
@@ -208,6 +215,15 @@ function applyRule(){
 		document.form.ewan_dot1q[1].disabled = true;
 		document.form.ewan_vid.disabled = true;
 		document.form.ewan_dot1p.disabled = true;
+	}
+
+	if(productid == "BRT-AC828" || productid == "RT-AD7200"){	//MODELDEP: BRT-AC828,RT-AD7200
+		if(original_wan_dot1q != document.form.wan_dot1q.value || original_wan_vid != document.form.wan_vid.value)
+			FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
+	}else{
+		document.form.wan_dot1q[0].disabled = true;
+		document.form.wan_dot1q[1].disabled = true;
+		document.form.wan_vid.disabled = true;
 	}
 
 	if(validForm()){
@@ -815,7 +831,7 @@ function ppp_echo_control(flag){
 <script>
 	if(sw_mode == 3){
 		alert("<#page_not_support_mode_hint#>");
-		location.href = '<% abs_index_page(); %>';
+		location.href = "/";
 	}
 </script>
 <div id="TopBanner"></div>
@@ -869,7 +885,7 @@ function ppp_echo_control(flag){
 	  			<td bgcolor="#4D595D" valign="top">
 		  			<div>&nbsp;</div>
 		  			<div class="formfonttitle"><#menu5_3#> - <#menu5_3_1#></div>
-		  			<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		  			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		  			<div id="page_title" class="formfontdesc" style="margin-bottom:0px;"><#Layer3Forwarding_x_ConnectionType_sectiondesc#></div>
 
 						<table id="WANscap" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
@@ -882,10 +898,6 @@ function ppp_echo_control(flag){
 								<th id="wan_inf_th"><#wan_type#></th>
 								<td align="left">
 									<select class="input_option" name="wan_unit" onchange="change_wan_unit(this);"></select>
-									<!--select id="dsltmp_transmode" name="dsltmp_transmode" class="input_option" style="margin-left:7px;" onChange="change_dsl_transmode(this);">
-													<option value="atm" <% nvram_match("dsltmp_transmode", "atm", "selected"); %>>ADSL WAN (ATM)</option>
-													<option value="ptm" <% nvram_match("dsltmp_transmode", "ptm", "selected"); %>>VDSL WAN (PTM)</option>
-									</select-->
 								</td>
 							</tr>
 						</table>
@@ -955,6 +967,23 @@ function ppp_echo_control(flag){
 							<th>802.1P</th>
 							<td>
 								<input type="text" name="ewan_dot1p" maxlength="4" class="input_6_table" value="<% nvram_get("ewan_dot1p"); %>" onKeyPress="return validator.isNumber(this,event);"> ( 0 ~ 7 )
+							</td>
+						</tr>
+						</table>
+
+						<table id="wan_dot1q_setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+						<thead><tr><td colspan="2">802.1Q</td></tr></thead>
+						<tr>
+							<th><#WLANConfig11b_WirelessCtrl_button1name#></th>
+							<td>
+								<input type="radio" name="wan_dot1q" class="input" value="1" onclick="return change_common_radio(this, 'IPConnection', 'wan_dot1q', 1);" <% nvram_match("wan_dot1q", "1", "checked"); %>><#checkbox_Yes#>
+								<input type="radio" name="wan_dot1q" class="input" value="0" onclick="return change_common_radio(this, 'IPConnection', 'wan_dot1q', 0);" <% nvram_match("wan_dot1q", "0", "checked"); %>><#checkbox_No#>
+							</td>
+						</tr>
+						<tr>
+							<th>VLAN ID</th>
+							<td>
+								<input type="text" name="wan_vid" maxlength="4" class="input_6_table" value="<% nvram_get("wan_vid"); %>" onKeyPress="return validator.isNumber(this,event);"> ( 2 ~ 4094 )
 							</td>
 						</tr>
 						</table>
@@ -1141,7 +1170,7 @@ function ppp_echo_control(flag){
           	<th ><a class="hintstyle" href="javascript:void(0);" onClick="openHint(7,16);"><#PPPConnection_x_MacAddressForISP_itemname#></a></th>
 				<td>
 					<input type="text" name="wan_hwaddr_x" class="input_20_table" maxlength="17" value="<% nvram_get("wan_hwaddr_x"); %>" onKeyPress="return validator.isHWAddr(this,event)" autocorrect="off" autocapitalize="off">
-					<input type="button" class="button_gen_long" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
+					<input type="button" class="button_gen" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
 				</td>
         	</tr>
 

@@ -1203,7 +1203,7 @@ function ppp_echo_control(flag){
 								<td bgcolor="#4D595D" valign="top">
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#menu5_3#> - <#menu5_3_1#></div>
-									<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin: 10px 0 10px 5px;" class="splitLine"></div>
 									<div id="desc_default" class="formfontdesc"><#dsl_wan_page_desc#></div>
 									<div id="desc_edit" class="formfontdesc"><#Layer3Forwarding_x_ConnectionType_sectiondesc#></div>
 
@@ -1581,7 +1581,7 @@ function ppp_echo_control(flag){
 											</th>
 											<td>
 												<input type="text" name="dslx_hwaddr" class="input_20_table" maxlength="17" value="<% nvram_get("dslx_hwaddr"); %>" onKeyPress="return validator.isHWAddr(this,event)" autocorrect="off" autocapitalize="off">
-												<input type="button" class="button_gen_long" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
+												<input type="button" class="button_gen" onclick="showMAC();" value="<#BOP_isp_MACclone#>">
 											</td>
 										</tr>
 										<tr>

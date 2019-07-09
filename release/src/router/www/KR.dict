@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=DSL 서비스의 성능을 가장 잘 설명하는 옵션을 선택하십시오
-feedback_country=국가 / 지역
+feedback_country=국가
 feedback_cancel_capturing=디버그 캡처 취소
 feedback_current_capturing=진단 디버그 로그 캡처가 진행 중
 feedback_capturing_duration=진단 디버그 로그 캡처 기간
@@ -1924,7 +1924,6 @@ IFTTT_Signin=IFTTT 계정에 <a id="ifttt_signin">로그인</a> 하십시오.
 IFTTT_start0=ASUS 라우터와 IFTTT 로자동화생활을시작하십시오!
 IFTTT_start1=시작하기:
 in=에
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=밴드
 Interface_target=대상 밴드
 Internet=인터넷

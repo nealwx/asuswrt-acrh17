@@ -882,7 +882,7 @@ int get_wl_channel_list_by_bw_core(int unit, string_1024 list_of_channels, int b
 {
 	int ret;
 	int retval = 0;
-	char tmp[256];
+	char tmp[256], tmp_t[256];
 	char *p;
 	int i = 0;;
 	char cur_ccode[20] = {0};
@@ -919,15 +919,19 @@ int get_wl_channel_list_by_bw_core(int unit, string_1024 list_of_channels, int b
 	{
 		if (i == 0)
 			sprintf(tmp, "[\"%s\"", (char *) p);
-		else
-			sprintf(tmp,  "%s, \"%s\"", tmp, (char *) p);
+		else{
+			sprintf(tmp_t,  "%s, \"%s\"", tmp, (char *) p);
+			strlcpy(tmp, tmp_t, sizeof(tmp));
+		}
 
 		p = strtok(NULL, ",");
 		i++;
 	}
 
-	if (i)
-		sprintf(tmp,  "%s]", tmp);
+	if (i){
+		sprintf(tmp_t,  "%s]", tmp);
+		strlcpy(tmp, tmp_t, sizeof(tmp));
+	}
 
 ERROR:
 	/* list_of_channels = 1024, tmp = 256 */
@@ -985,8 +989,10 @@ int ej_wl_channel_list_5g_40m(int eid, webs_t wp, int argc, char_t **argv)
 	static char list_40m[1024] = {0};
 	int retval;
 
+	_dprintf("Raymond: [%s][%d]\n", __func__, __LINE__);
 	if(strlen(list_40m) == 0) get_wl_channel_list_by_bw_core(1, list_40m, 40);
 	retval = websWrite(wp, "%s", list_40m);
+	_dprintf("Raymond: [%s][%d]\n", __func__, __LINE__);
 	return retval;
 }
 
@@ -995,8 +1001,10 @@ int ej_wl_channel_list_5g_80m(int eid, webs_t wp, int argc, char_t **argv)
 	static char list_80m[1024] = {0};
 	int retval;
 
+	_dprintf("Raymond: [%s][%d]\n", __func__, __LINE__);
 	if(strlen(list_80m) == 0) get_wl_channel_list_by_bw_core(1, list_80m, 80);
 	retval = websWrite(wp, "%s", list_80m);
+	_dprintf("Raymond: [%s][%d]\n", __func__, __LINE__);
 	return retval;
 }
 
@@ -1997,8 +2005,15 @@ ej_wl_auth_psta_qtn(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		}
 	}
 
-	retval += websWrite(wp, "wlc_state=%d;", psta);
-	retval += websWrite(wp, "wlc_state_auth=%d;", psta_auth);
+	if(json_support){
+		retval += websWrite(wp, "{");
+		retval += websWrite(wp, "\"wlc_state\":\"%d\"", psta);
+		retval += websWrite(wp, ",\"wlc_state_auth\":\"%d\"", psta_auth);
+		retval += websWrite(wp, "}");
+	}else{
+		retval += websWrite(wp, "wlc_state=%d;", psta);
+		retval += websWrite(wp, "wlc_state_auth=%d;", psta_auth);
+	}
 
 ERROR:
 	return retval;

@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=Pilih pilihan mana yang terbaik menerangkan prestasi perkhidmatan DSL anda
-feedback_country=Negara / Wilayah anda
+feedback_country=Negara Anda
 feedback_cancel_capturing=Batalkan tangkapan nyahpepijat
 feedback_current_capturing=Tangkapan log nyahpepijat diagnostik sedang berjalan
 feedback_capturing_duration=Tempoh tangkapan log nyahpepijat diagnostik
@@ -1924,7 +1924,6 @@ IFTTT_Signin=<a id="ifttt_signin">Daftar masuk</a> ke akaun IFTTT anda.
 IFTTT_start0=Mulakan kehidupan automasi dengan Penghala ASUS dan IFTTT!
 IFTTT_start1=Bermula :
 in=dalam
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Band
 Interface_target=Sasaran Band
 Internet=Internet

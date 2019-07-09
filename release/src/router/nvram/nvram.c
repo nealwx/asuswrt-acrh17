@@ -134,6 +134,7 @@ static int nvram_dec_all(char* buf_ap, char* buf)
 	char name[128], nv[65535];
 	int len;
 	char output[NVRAM_ENC_MAXLEN];
+
 	memset(output, 0, sizeof(output));
 
 
@@ -172,6 +173,7 @@ static int nvram_dec_all(char* buf_ap, char* buf)
 	return 0;
 }
 #endif
+
 /*******************************************************************
 * NAME: _secure_romfile
 * AUTHOR: Andy Chiu

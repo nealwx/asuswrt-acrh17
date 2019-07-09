@@ -34,6 +34,7 @@
 #define ENC_XOR     (0x74)
 #define DATA_WORDS_LEN (120)
 #define ENC_WORDS_LEN  (384)
+#define ASUSRT_STACKSIZE        0x200000
 
 extern int doSystem(char *fmt, ...);
 
@@ -81,6 +82,10 @@ extern int _eval(char *const argv[], const char *path, int timeout, pid_t *ppid)
  */
 #define CPU0	"0"
 #define CPU1	"1"
+#if defined(GTAC5300)
+#define CPU2	"2"
+#define CPU3	"3"
+#endif
 
 extern int _cpu_eval(int *ppid, char *cmds[]);
 
@@ -99,7 +104,7 @@ extern int _cpu_eval(int *ppid, char *cmds[]);
  */
 extern int kill_pidfile(char *pidfile);
 extern int kill_pidfile_s(char *pidfile, int sig);
-extern int kill_pidfile_s_rm(char *pidfile, int sig);
+extern int kill_pidfile_s_rm(char *pidfile, int sig, int rm);
 
 /*
  * fread() with automatic retry on syscall interrupt
@@ -152,12 +157,26 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 }	
 
 /* Strip trailing CR/NL from string <s> */
+#define strip_new_line(s) ({					\
+	char *end = (s) + strlen(s) -1;				\
+	while((end >= (s)) && (*end == '\n' || *end == '\r'))	\
+		*end-- = '\0';					\
+	s;							\
+})
+
+/* Strip trailing CR/NL from string <s> and space ' '. */
 #define chomp(s) ({ \
 	char *c = (s) + strlen((s)) - 1; \
 	while ((c > (s)) && (*c == '\n' || *c == '\r' || *c == ' ')) \
 		*c-- = '\0'; \
 	s; \
 })
+
+/* skip the space ' ' in front of s (string) */
+#define skip_space(s) {						\
+	while(*s == ' ')					\
+		s++;						\
+}
 
 
 /* Simple version of _eval() (no timeout and wait for child termination) */
@@ -404,5 +423,7 @@ extern char *ether_etoa2(const unsigned char *e, char *a);
 extern char *ATE_FACTORY_MODE_STR();
 extern char *ATE_UPGRADE_MODE_STR();
 extern int hex2str(unsigned char *hex, char *str, int hex_len);
+extern void reset_stacksize(int new_stacksize);
+extern int arpcache(char *tgmac, char *tgip);
 
 #endif /* _shutils_h_ */

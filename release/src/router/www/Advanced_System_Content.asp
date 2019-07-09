@@ -58,6 +58,9 @@ time_day = uptimeStr.substring(5,7);//Mon, 01 Aug 2011 16:25:44 +0800(1467 secs 
 time_mon = uptimeStr.substring(9,12);
 time_time = uptimeStr.substring(18,20);
 dstoffset = '<% nvram_get("time_zone_dstoff"); %>';
+cfg_master = '<% nvram_get("cfg_master"); %>';
+ncb_enable = '<% nvram_get("ncb_enable"); %>';
+wifison = '<% nvram_get("wifison_ready"); %>';
 
 var orig_shell_timeout_x = Math.floor(parseInt("<% nvram_get("shell_timeout"); %>")/60);
 var orig_enable_acc_restriction = '<% nvram_get("enable_acc_restriction"); %>';
@@ -195,6 +198,12 @@ function initial(){
 		document.form.btn_ez_radiotoggle[2].disabled = true;
 		document.getElementById('btn_ez_radiotoggle_tr').style.display = "none";
 	}
+	else if(wifison == 1){
+		if(sw_mode == 1 || (sw_mode == 3 && cfg_master == 1))
+			document.getElementById("sw_mode_radio_tr").style.display = "";
+		if (based_modelid == "MAP-AC2200" || based_modelid == "RT-AC92U")
+			document.getElementById("ncb_enable_option_tr").style.display = "";
+	}
 	
 	if(sw_mode != 1){
 		document.getElementById('misc_http_x_tr').style.display = "none";
@@ -275,6 +284,8 @@ function applyRule(){
 
 		var restart_firewall_flag = false;
 		var restart_httpd_flag = false;
+		var ncb_enable_option_flag = false;
+		var sw_mode_radio_flag = false;
 	
 		//parse array to nvram
 		var old_fw_tmp_value = ""; //for old version fw
@@ -389,7 +400,20 @@ function applyRule(){
 				}
 			}
 		}
-		
+
+		if(document.form.ncb_enable_option.value != ncb_enable){
+			document.form.ncb_enable.value = document.form.ncb_enable_option.value;
+			ncb_enable_option_flag = true;
+		}
+
+		if((document.form.sw_mode_radio.value==1 && sw_mode!=3) ||
+			(document.form.sw_mode_radio.value==0 && sw_mode==3) ){
+			if (sw_mode == 1) document.form.sw_mode.value = 3;
+			else if (sw_mode == 3) document.form.sw_mode.value = 1;
+
+			sw_mode_radio_flag = true;
+		}
+
 		if(document.form.btn_ez_radiotoggle[1].disabled == false && document.form.btn_ez_radiotoggle[1].checked == true){
 				document.form.btn_ez_radiotoggle.value=1;
 				document.form.btn_ez_mode.value=0;
@@ -429,7 +453,15 @@ function applyRule(){
 			
 		if(restart_firewall_flag)
 			action_script_tmp += "restart_firewall;";
-		
+
+		if(ncb_enable_option_flag)
+			action_script_tmp += "restart_bhblock;";
+
+		if(sw_mode_radio_flag) {
+			action_script_tmp += "restart_chg_swmode;";
+			document.form.action_wait.value = 210;
+		}
+
 		if(pwrsave_support)
 			action_script_tmp += "pwrsave;";
 
@@ -900,7 +932,7 @@ function show_http_clientlist(){
 	}
 	else {
 		var transformNumToText = function(restrict_type) {
-			var bit_text_array = ["", "Web UI", "SSH", "Telnet"];
+			var bit_text_array = ["", "<#System_WebUI#>", "<#System_SSH#>", "<#System_Telnet#>"];
 			var type_text = "";
 			for(var i = 1; restrict_type != 0 && i <= 4; i += 1) {
 				if(restrict_type & 1) {
@@ -1436,6 +1468,8 @@ function pullPingTargetList(obj){
 <input type="hidden" name="reboot_schedule_enable" value="<% nvram_get("reboot_schedule_enable"); %>">
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
 <input type="hidden" name="http_lanport" value="<% nvram_get("http_lanport"); %>">
+<input type="hidden" name="sw_mode" value="<% nvram_get("sw_mode"); %>">
+<input type="hidden" name="ncb_enable" value="<% nvram_get("ncb_enable"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
 <input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
 
@@ -1461,7 +1495,7 @@ function pullPingTargetList(obj){
 		<td bgcolor="#4D595D" valign="top">
 			<div>&nbsp;</div>
 			<div class="formfonttitle"><#menu5_6#> - <#menu5_6_2#></div>
-			<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 			<div class="formfontdesc"><#System_title#></div>
 
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
@@ -1531,7 +1565,7 @@ function pullPingTargetList(obj){
 						<script>
 							var needReboot = false;
 
-							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "MAP-AC3000" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
+							if( based_modelid == "DSL-AC68U" || based_modelid == "RT-AC3200" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "RT-AC56S" || based_modelid == "RT-AC56U" || based_modelid == "RT-AC55U" || based_modelid == "RT-AC55UHP" || based_modelid == "RT-N18U" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" || based_modelid == "RP-AC68U" || based_modelid == "RT-AC58U" || based_modelid == "RT-AC82U" || based_modelid == "RT-AC92U" || based_modelid == "RT-AC85U" || based_modelid == "RT-AC65U" || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" || based_modelid == "RT-N65U" || based_modelid == "GT-AC5300" || based_modelid == "RT-AX88U" || based_modelid == "RT-AX95U" || based_modelid == "BRT-AC828"
 							){
 								$("#reduce_usb3_tr").show();
 							}
@@ -1679,12 +1713,12 @@ function pullPingTargetList(obj){
 					</td>
 				</tr>
 				<tr id="pwrsave_tr">
-					<th align="right">Power Save Mode<!--untranslated--></th>
+					<th align="right"><#usb_Power_Save_Mode#></th>
 					<td>
 						<select name="pwrsave_mode" class="input_option">
-							<option value="0" <% nvram_match("pwrsave_mode", "0","selected"); %> >Performance<!--untranslated--></option>
-							<option value="1" <% nvram_match("pwrsave_mode", "1","selected"); %> >Auto<!--untranslated--></option>
-							<option value="2" <% nvram_match("pwrsave_mode", "2","selected"); %> >Power Save<!--untranslated--></option>
+							<option value="0" <% nvram_match("pwrsave_mode", "0","selected"); %> ><#usb_Performance#></option>
+							<option value="1" <% nvram_match("pwrsave_mode", "1","selected"); %> ><#Auto#></option>
+							<option value="2" <% nvram_match("pwrsave_mode", "2","selected"); %> ><#usb_Power_Save#></option>
 						</select>
 					</td>
 				</tr>
@@ -1829,7 +1863,7 @@ function pullPingTargetList(obj){
 				</tr>
 		
 				<tr id="https_lanport">
-					<th>HTTPS LAN port</th>
+					<th><#System_HTTPS_LAN_Port#></th>
 					<td>
 						<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off">
 						<span id="https_access_page"></span>
@@ -1894,9 +1928,9 @@ function pullPingTargetList(obj){
 						<div id="ClientList_Block_PC" class="clientlist_dropdown" style="margin-left:27px;width:235px;"></div>	
 					</td>
 					<td width="40%">
-						<input type="checkbox" name="access_webui" class="input access_type" value="1">Web UI<!--untranslated-->
-						<input type="checkbox" name="access_ssh" class="input access_type" value="2">SSH<!--untranslated-->
-						<input type="checkbox" name="access_telnet" class="input access_type" value="4">Telnet(LAN only)<!--untranslated-->
+						<input type="checkbox" name="access_webui" class="input access_type" value="1"><#System_WebUI#>
+						<input type="checkbox" name="access_ssh" class="input access_type" value="2"><#System_SSH#>
+						<input type="checkbox" name="access_telnet" class="input access_type" value="4"><#System_Telnet#>
 					</td>
 					<td width="10%">
 						<div id="add_delete" class="add_enable" style="margin:0 auto" onclick="addRow(document.form.http_client_ip_x_0, 4);"></div>

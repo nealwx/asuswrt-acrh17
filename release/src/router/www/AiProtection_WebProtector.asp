@@ -248,7 +248,7 @@ function addRow_main(obj, length){
 		document.form.PC_devicename.focus();
 		return false;
 	}
-	else if(!check_macaddr(document.form.PC_devicename, check_hwaddr_flag(document.form.PC_devicename))){
+	else if(!check_macaddr(document.form.PC_devicename, check_hwaddr_flag(document.form.PC_devicename, 'inner'))){
 		document.form.PC_devicename.focus();
 		document.form.PC_devicename.select();
 		return false;
@@ -274,7 +274,7 @@ function addRow_main(obj, length){
 	}
 
 	if(blank_category == 0){
-		alert("The Content Category can not be empty");
+		alert("<#AiProtection_Category_Alert#>");
 		return false;
 	}
 
@@ -555,7 +555,7 @@ function edit_table(){
 		}
 
 		if(blank_category == 0){
-				alert("The Content Category can not be empty");
+				alert("<#AiProtection_Category_Alert#>");
 				return false;
 		}
 	}
@@ -864,7 +864,7 @@ function switch_control(_status){
 										</tr>
 									</table>
 								</div>
-								<div style="margin:0px 0px 10px 5px;"><img src="/images/New_ui/export/line_export.png"></div>
+								<div style="margin:0px 0px 10px 5px;" class="splitLine"></div>
 								<div id="PC_desc">
 									<table width="700px" style="margin-left:25px;">
 										<tr>

@@ -63,15 +63,31 @@ function initial(){
 		document.form.lacp_enabled.disabled = true;
 	}
 
-	//MODELDEP
-	if(based_modelid == "GT-AC5300"){
+	if(qca_support){
+		if(lyra_hide_support){
+			document.getElementById("jumbo_tr").style.display = "none";
+			document.form.jumbo_frame_enable.disabled = true;
+		}
+
 		document.getElementById("ctf_tr").style.display = "none";
-		var new_str = "";
-		new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN5");
-		document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN2/g, "LAN6");
+		document.form.ctf_disable_force.disabled = true;
+
+		if(wifison_ready != "1"){
+			document.getElementById("qca_tr").style.display = "";
+			document.form.qca_sfe.disabled = false;
+		}
 	}
-	else if(based_modelid == "RT-AC86U" || based_modelid == "AC2900"){
-		document.getElementById("ctf_tr").style.display = "none";
+	else{
+		//MODELDEP
+		if(based_modelid == "GT-AC5300"){
+			document.getElementById("ctf_tr").style.display = "none";
+			var new_str = "";
+			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN5");
+			document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN2/g, "LAN6");
+		}
+		else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U"){
+			document.getElementById("ctf_tr").style.display = "none";
+		}
 	}
 
 	if(lacp_support && wans_dualwan_array.indexOf("lan") != -1){
@@ -219,11 +235,10 @@ function check_bonding_policy(obj){
 				  					<td bgcolor="#4D595D" valign="top">
 				  						<div>&nbsp;</div>
 				  						<div class="formfonttitle"><#menu5_2#> - <#Switch_itemname#></div>
-		      							<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		      							<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 										<div class="formfontdesc"><#SwitchCtrl_desc#></div>
-
 										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
-											<tr>
+											<tr id="jumbo_tr">
 												<th><#jumbo_frame#></th>
 												<td>
 													<select name="jumbo_frame_enable" class="input_option">
@@ -237,16 +252,26 @@ function check_bonding_policy(obj){
 		      									<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,2);"><#NAT_Acceleration#></a></th>
 												<td>
 													<select name="ctf_disable_force" class="input_option">
-														<option class="content_input_fd" value="1" <% nvram_match("ctf_disable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-														<option class="content_input_fd" value="0" <% nvram_match("ctf_disable", "0","selected"); %>><#Auto#></option>
+														<option class="content_input_fd" value="1" <% nvram_match("ctf_disable_force", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+														<option class="content_input_fd" value="0" <% nvram_match("ctf_disable_force", "0","selected"); %>><#Auto#></option>
 													</select>
 													&nbsp
 													<span id="ctfLevelDesc"></span>
 												</td>
-											</tr>     
+											</tr>
+
+											<tr id="qca_tr" style="display: none;">
+											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(29,2);"><#NAT_Acceleration#></a></th>
+												<td>
+													<select name="qca_sfe" class="input_option" disabled>
+													<option class="content_input_fd" value="0" <% nvram_match("qca_sfe", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+													<option class="content_input_fd" value="1" <% nvram_match("qca_sfe", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+												</select>
+												</td>
+											</tr>
 
 											<tr style="display:none">
-												<th>Enable GRO(Generic Receive Offload)</th>
+												<th><#SwitchCtrl_Enable_GRO#></th>
 												<td>
 													<input type="radio" name="gro_disable_force" value="0" <% nvram_match("gro_disable_force", "0", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="gro_disable_force" value="1" <% nvram_match("gro_disable_force", "1", "checked"); %>><#checkbox_No#>

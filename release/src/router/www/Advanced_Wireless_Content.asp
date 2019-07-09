@@ -22,14 +22,12 @@
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script><% wl_get_parameter(); %>
 
 $(function () {
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
-		$('<script>')
-			.attr('type', 'text/javascript')
-			.attr('src','/require/modules/amesh.js')
-			.appendTo('head');
+		addNewScript('/require/modules/amesh.js');
 	}
 });
 
@@ -41,9 +39,10 @@ var wlc_band_value = '<% nvram_get("wlc_band"); %>';
 var cur_control_channel = [<% wl_control_channel(); %>][0];
 var wlc0_ssid = '<% nvram_get("wlc0_ssid"); %>';
 var wlc1_ssid = '<% nvram_get("wlc1_ssid"); %>';
+var wifison_ready = httpApi.nvramGet(["wifison_ready"]).wifison_ready;
 
 function initial(){
-	show_menu();	
+	show_menu();
 	genBWTable('<% nvram_get("wl_unit"); %>');
 
 	regen_band(document.form.wl_unit);
@@ -155,7 +154,7 @@ function initial(){
 		inputCtrl(document.form.wl_nctrlsb, 0);
 	}
 	
-	if(document.form.wl_channel.value == '0' && cur_control_channel){
+	if(!Rawifi_support && document.form.wl_channel.value  == '0' && cur_control_channel){
 		document.getElementById("auto_channel").style.display = "";
 		document.getElementById("auto_channel").innerHTML = "Current control channel: " + cur_control_channel[wl_unit_value];
 	}
@@ -202,6 +201,9 @@ function initial(){
 
 		enableSmartCon(smart_connect_flag_t);
 	}
+
+	if(wifison_ready == "1")
+		document.getElementById("wl_unit_field").style.display = "none";
 }
 
 function genBWTable(_unit){
@@ -517,12 +519,8 @@ function applyRule(){
 		if(isSwMode("re") || isSwMode("mb"))
 			document.form.action_wait.value = "5";
 
-		if (Qcawifi_support) {
+		if (Qcawifi_support)
 			document.form.action_wait.value = "30";
-		}
-		else if (Rawifi_support) {
-			document.form.action_wait.value = "20";
-		}
 
 		document.form.submit();
 	}
@@ -576,6 +574,26 @@ function validForm(){
 		if(auth_mode != "radius" && !validator.wlKey(cur_wep_key))
 			return false;
 	}	
+
+	if(isSupport("triband") && dwb_info.mode) {
+		var jsonPara = {};
+		jsonPara["edit_wl_unit"] = wl_unit;
+		jsonPara["edit_wl_ssid"] = document.form.wl_ssid.value;
+		jsonPara["dwb_unit"] = dwb_info.band;
+		jsonPara["smart_connect"] = document.form.smart_connect_x.value;
+		var ssid_array = [];
+		ssid_array.push(httpApi.nvramGet(["wl0_ssid"]).wl0_ssid);
+		if(wl_info.band5g_support)
+			ssid_array.push(httpApi.nvramGet(["wl1_ssid"]).wl1_ssid);
+		if(wl_info.band5g_2_support)
+			ssid_array.push(httpApi.nvramGet(["wl2_ssid"]).wl2_ssid);
+		jsonPara["current_ssid"] = ssid_array;
+		if(!validator.dwb_check_wl_setting(jsonPara)) {
+			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
+			return false;
+		}
+	}
+
 	return true;
 }
 
@@ -731,20 +749,27 @@ function enableSmartCon(val){
 	var value = new Array();
 	var desc = new Array();
 
-	if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300"){
-		desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
-		value = ["1", "2"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);
-	}
-	else if(based_modelid =="RT-AC3200"){
-		desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)"];
-		value = ["1"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);	
-	}
-	else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE"){
+	if(isSupport("triband") && dwb_info.mode) {
 		desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
 		value = ["1"];
-		add_options_x2(document.form.smart_connect_t, desc, value, val);		
+		add_options_x2(document.form.smart_connect_t, desc, value, val);
+	}
+	else {
+		if(based_modelid=="RT-AC5300" || based_modelid=="GT-AC5300"){
+			desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)", "5GHz Smart Connect (5GHz-1 and 5GHz-2)"];
+			value = ["1", "2"];
+			add_options_x2(document.form.smart_connect_t, desc, value, val);
+		}
+		else if(based_modelid =="RT-AC3200"){
+			desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)"];
+			value = ["1"];
+			add_options_x2(document.form.smart_connect_t, desc, value, val);
+		}
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE"){
+			desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
+			value = ["1"];
+			add_options_x2(document.form.smart_connect_t, desc, value, val);
+		}
 	}
 	
 	
@@ -764,7 +789,7 @@ function enableSmartCon(val){
 		}
 	}
 
-	if(val == 0 || (val == 2 && wl_unit == 0)){
+	if((val == 0 || (val == 2 && wl_unit == 0)) || (dwb_info.mode && wl_unit == dwb_info.band)){
 		document.getElementById("wl_unit_field").style.display = "";
 		document.form.wl_nmode_x.disabled = "";
 		document.getElementById("wl_optimizexbox_span").style.display = "";
@@ -955,7 +980,7 @@ function change_wl_nmode(o){
 		  <td bgcolor="#4D595D" valign="top">
 		  <div>&nbsp;</div>
 		  <div class="formfonttitle"><#menu5_1#> - <#menu5_1_1#></div>
-      <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+      		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
       <div class="formfontdesc"><#adv_wl_desc#></div>
 		<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
 			<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" id="WLgeneral" class="FormTable">
@@ -1013,6 +1038,7 @@ function change_wl_nmode(o){
 						<select name="wl_unit" class="input_option" onChange="_change_wl_unit(this.value);">
 							<option class="content_input_fd" value="0" <% nvram_match("wl_unit", "0","selected"); %>>2.4 GHz</option>
 							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "1","selected"); %>>5 GHz</option>
+							<option class="content_input_fd" value="1" <% nvram_match("wl_unit", "2","selected"); %>>5GHz-2</option>
 						</select>			
 					</td>
 		  	</tr>

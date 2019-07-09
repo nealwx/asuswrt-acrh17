@@ -57,15 +57,7 @@ var wanObj = {
 		"wan_dns1_x": "",
 		"wan_dns2_x": "",
 		"wan_heartbeat_x": ""
-	},
-
-	"LWAN_2p5G": {
-		"wans_extwan": "0"
-	},
-
-	"dualWan": {
-		"wans_dualwan": ""
-	}
+	}	
 }
 
 var lanObj = {
@@ -224,8 +216,6 @@ var modemObj = {
 
 var systemVariable = {
 	"originWanType": "", /* ToDo: Secondary WAN support */
-	"originWansExtwan": "",
-	"originWansDualwan": "",
 	"manualWanSetup": false,
 	"wanDnsenable": "",
 	"detwanResult": {
@@ -251,20 +241,9 @@ var systemVariable = {
 	"multiPAP" : {
 		"wlcOrder": [],
 		"wlcStatus": {}
-	},
-	"wanOption": false
+	}
 }
 
 var aimeshObj = {
 	"cfg_master": "1"
-}
-
-var boostKeyObj = {
-	"turbo_mode": "1"
-}
-
-var axModeObj = {
-	"wl0_he_features": "3",
-	"wl1_he_features": "3",
-	"wl2_he_features": "3"
 }

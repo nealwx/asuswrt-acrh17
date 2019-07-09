@@ -1652,7 +1652,7 @@ feedback_conn_sws=Počasna žično omrežje
 feedback_conn_rra=Samodejni ponovni zagon usmerjevalnika
 feedback_conn_ucp=Težava z nestabilno povezavo
 feedback_connection_type=Izberite možnost, ki najbolje opisuje učinkovitost delovanja storitve DSL
-feedback_country=Vaša država / regija
+feedback_country=Vaša država
 feedback_cancel_capturing=Prekliči zajem iskanja napak
 feedback_current_capturing=V teku je beleženje diagnostičnega dnevnika iskanja napak
 feedback_capturing_duration=Trajanje beleženja diagnostičnega dnevnika iskanja napak
@@ -1924,7 +1924,6 @@ IFTTT_Signin=Prijavite se <a id="ifttt_signin">Prijava</a> v račun IFTTT.
 IFTTT_start0=Zaženi samodejne ukaze z aplikacijo ASUS Router in IFTTT!
 IFTTT_start1=Začni:
 in=v
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Pas
 Interface_target=Ciljni pas
 Internet=Internet

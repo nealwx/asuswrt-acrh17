@@ -36,14 +36,6 @@
 	border-radius:7px;
 	margin-left:45px;
 }
-.splitLine{
-	background-image: url('/images/New_ui/export/line_export.png');
-	background-repeat: no-repeat;
-	height: 3px;
-	width: 100%;
-	margin-bottom: 2px;
-	margin-top: 2px;
-}
 #sortable div table{
 	font-family:Verdana;
 	width: 100%;
@@ -176,8 +168,8 @@ function initial(){
 	}
 
 	show_menu();
-	// https://www.asus.com/support/FAQ/1008717/
-	httpApi.faqURL("1008717", function(url){document.getElementById("faq").href=url;});
+	// https://www.asus.com/support/FAQ/1010934/
+	httpApi.faqURL("1010934", function(url){document.getElementById("faq").href=url;});
 
 	if(totalClientNum.online == 0) {
 		var loop_count = 0;
@@ -1319,7 +1311,9 @@ function switch_control(_status){
 							</td>
 						</tr>
 						<tr>
-							<td height="5" bgcolor="#4D595D" valign="top"><img src="images/New_ui/export/line_export.png" /></td>
+							<td height="5" bgcolor="#4D595D" valign="top">
+								<div style="margin: 2px auto;" class="splitLine"></div>
+							</td>
 						</tr>
 						<tr>
 							<td>

@@ -1652,7 +1652,7 @@ feedback_conn_sws=Slow wired speed
 feedback_conn_rra=Router reboot automatically
 feedback_conn_ucp=Unstable connection problem
 feedback_connection_type=DSL hizmetinizin performansını en iyi açıklayan seçeneği belirtin
-feedback_country=Ülkeniz / Bölgeniz
+feedback_country=Ülkeniz
 feedback_cancel_capturing=Hata ayıklama yakalamayı iptal et
 feedback_current_capturing=Tanılayıcı hata ayıklama günlüğü yakalama devam ediyor
 feedback_capturing_duration=Tanılayıcı hata ayıklama günlüğü yakalama süresi
@@ -1924,7 +1924,6 @@ IFTTT_Signin=IFTTT hesabınızda <a id="ifttt_signin">oturum açın</a>.
 IFTTT_start0=ASUS Yönlendirici ve IFTTT ile otomatikleştirilmiş bir hayat başlatın!
 IFTTT_start1=Başlayın:
 in=içinde
-info_failed=Temporarily unable to get the latest firmware information. Please try again later.
 Interface=Bant
 Interface_target=Hedef Bant
 Internet=Internet

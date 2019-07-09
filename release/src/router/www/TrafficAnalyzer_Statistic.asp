@@ -101,7 +101,7 @@ function initial(){
 	}
 	else{
 		if(document.cookie.search('demo=1') == "-1"){
-			introduce_demo();
+			setTimeout("introduce_demo();", 1000);
 			document.cookie = "demo=1";
 		}
 
@@ -210,6 +210,10 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 				}
 			}
 			else{
+				if(client_index == undefined){
+					client_index = "0";
+				}
+				
 				document.getElementById('top_client_name').innerHTML = total_apps_array[client_index].name;
 				if(document.getElementById('traffic_option').value == "both"){
 					total_traffic = total_apps_array[client_index].rx + total_apps_array[client_index].tx;
@@ -1606,7 +1610,7 @@ function updateTrafficAnalyzer() {
 											</tr>
 										</table>
 									</div>
-									<div style="margin-left:5px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+									<div style="margin:0 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#Traffic_Analyzer_desc#></div>
 									<div style="margin-left:10px;">
 										<label style="font-size:16px;"><#Statistic_last_date#>:</label>

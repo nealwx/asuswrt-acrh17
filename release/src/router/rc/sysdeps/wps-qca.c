@@ -96,6 +96,10 @@ int is_wps_stopped(void)
 	int i, ret = 1;
 	char status[16], tmp[128], prefix[] = "wlXXXXXXXXXX_", word[256], *next, ifnames[128];
 	int wps_band = nvram_get_int("wps_band_x"), multiband = get_wps_multiband();
+	char tmpbuf[512];
+#if defined(RTCONFIG_WIFI_SON) || defined(RTCONFIG_AMAS)
+	int wps_enrollee_band = nvram_match("wifison_ready", "1") ? 1 : 0;
+#endif
 
 	i = 0;
 	strcpy(ifnames, nvram_safe_get("wl_ifnames"));
@@ -114,27 +118,19 @@ int is_wps_stopped(void)
 			continue;
 		}
 
-#ifdef RTCONFIG_WIFI_SON
-#ifndef RTCONFIG_DUAL_BACKHAUL
-		if(i==0)
-		{	
-			++i;
-			continue;
-		}
-#endif
-		if(i==2)
-		{
-			++i;
-			continue;
-		}
-#endif
-
 #ifdef RTCONFIG_WPS_ENROLLEE
-		if (nvram_match("wps_enrollee", "1"))
-			strcpy(status, getWscStatus_enrollee(i));
+		if (nvram_match("wps_enrollee", "1")) {
+#if defined(RTCONFIG_WIFI_SON) || defined(RTCONFIG_AMAS)
+			if (i != wps_enrollee_band) {
+				++i;
+				continue;
+			}
+#endif
+			strcpy(status, getWscStatus_enrollee(i, tmpbuf, sizeof(tmpbuf)));
+		}
 		else
 #endif
-			strcpy(status, getWscStatus(i));
+			strcpy(status, getWscStatus(i, tmpbuf, sizeof(tmpbuf)));
 
 		//dbG("band %d wps status: %s\n", i, status);
 		if (!strcmp(status, "Success") 
@@ -146,17 +142,24 @@ int is_wps_stopped(void)
 #ifdef RTCONFIG_WPS_LED
 			nvram_set("wps_success", "1");
 #endif
-#if defined(RTCONFIG_LP5523)
-//			lp55xx_leds_proc(LP55XX_ALL_LEDS_OFF, LP55XX_WPS_SUCCESS);
-//			usleep(3990 * 1000); // flashing 4 times is about 3990 ms
-#endif
-#if (defined(RTCONFIG_WPS_ENROLLEE) && defined(RTCONFIG_WIFI_CLONE))
+#if (defined(RTCONFIG_WPS_ENROLLEE))
 			if (nvram_match("wps_enrollee", "1")) {
 				nvram_set("wps_e_success", "1");
 #if (defined(PLN12) || defined(PLAC56))
 				set_wifiled(4);
 #endif
-				wifi_clone(i);
+#if defined(RTCONFIG_AMAS)
+#if defined(RTCONFIG_WIFI_SON)
+				if (!nvram_match("wifison_ready", "1"))
+#endif
+					amas_save_wifi_para();
+#if defined(RTCONFIG_WIFI_SON)
+				else
+#endif
+#endif	/* RTCONFIG_AMAS */
+#if defined(RTCONFIG_WIFI_CLONE)
+					wifi_clone(i);
+#endif
 			}
 #endif
 			ret = 1;
@@ -179,6 +182,15 @@ int is_wps_stopped(void)
 	}
 
 	return ret;
+}
+
+int is_wps_success(void)
+{
+#if (defined(RTCONFIG_WPS_ENROLLEE))
+	if (nvram_match("wps_enrollee", "1"))
+		return nvram_get_int("wps_e_success");
+#endif
+	return nvram_get_int("wps_success");
 }
 
 /*
